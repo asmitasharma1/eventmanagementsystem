@@ -1,0 +1,39 @@
+{% extends 'base_organizer.html' %}
+
+{%block title%}
+Submit Event
+{% endblock %}
+
+{%block content%}
+
+<h1>Register Your Events</h1><br>
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <label for="name">Name: </label>
+    {{ form.name }}
+    <br><br>
+    <label for="desc">Description: </label>
+    {{ form.desc }}
+    <br><br>
+    <label for="img">Image: </label>
+    {{ form.img }}
+    <br><br>
+    <label for="date">Date: </label>
+    {{ form.date }}
+    <br><br>
+    <label for="time">Time: </label>
+    {{ form.time }}
+    <br><br>
+    <label for="location">Location: </label>
+    {{ form.location }}
+    <br><br>
+    <input type="submit" value="Submit">
+
+    {% if form.errors %}
+    <div class="error-messages">
+        {{ form.errors }}
+    </div>
+    {% endif %}
+</form>
+
+{% endblock %}

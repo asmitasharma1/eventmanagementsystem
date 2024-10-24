@@ -1,0 +1,115 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+    /* Light background color */
+    margin: 0;
+    padding: 20px;
+}
+
+/* Dashboard Wrapper */
+.dashboard-wrapper {
+    display: flex;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    width: 200px;
+    /* Adjust width as needed */
+    background-color: #343a40;
+    /* Dark background for sidebar */
+    color: white;
+    padding: 15px;
+}
+
+.sidebar ul {
+    list-style: none;
+    /* Remove bullet points */
+    padding: 0;
+    /* Remove default padding */
+}
+
+.sidebar ul li {
+    margin-bottom: 10px;
+    /* Spacing between menu items */
+}
+
+.sidebar ul li a {
+    color: white;
+    /* Link color */
+    text-decoration: none;
+    /* Remove underline */
+    padding: 10px;
+    /* Add padding for clickable area */
+    display: block;
+    /* Make the whole area clickable */
+    border-radius: 5px;
+    /* Rounded corners */
+    transition: background-color 0.3s;
+    /* Smooth background transition */
+}
+
+.sidebar ul li a:hover {
+    background-color: #495057;
+    /* Darker background on hover */
+}
+
+/* Main Content Styles */
+.main-content {
+    flex-grow: 1;
+    /* Allow main content to fill available space */
+    padding: 20px;
+}
+
+/* Table Styles */
+table {
+    width: 100%;
+    /* Full width */
+    border-collapse: collapse;
+    /* Merge borders */
+    margin-top: 20px;
+    /* Space above table */
+}
+
+thead {
+    background-color: #343a40;
+    /* Dark header */
+    color: white;
+    /* White text */
+}
+
+th,
+td {
+    padding: 12px;
+    /* Padding for table cells */
+    text-align: left;
+    /* Left align text */
+    border: 1px solid #dee2e6;
+    /* Light gray borders */
+}
+
+tbody tr:nth-child(even) {
+    background-color: #f2f2f2;
+    /* Light gray for even rows */
+}
+
+tbody tr:hover {
+    background-color: #e9ecef;
+    /* Light hover effect */
+}
+
+/* Actions Links */
+td a {
+    text-decoration: none;
+    /* Remove underline */
+    color: #007bff;
+    /* Link color */
+    margin-right: 10px;
+    /* Space between links */
+    transition: color 0.3s;
+    /* Smooth color transition */
+}
+
+td a:hover {
+    color: #0056b3;
+    /* Darker color on hover */
+}

@@ -1,0 +1,205 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/styleuser.css' %}">
+    <title>Login | Event Pro</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #c54b3a, #b4b17b, #f78664, #97754a, #df9ef8);
+            background-size: 400% 400%;
+            animation: gradientAnimation 15s ease infinite;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        @keyframes gradientAnimation {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* Main container for split layout */
+        .main-container {
+            width: 80%;
+            max-width: 1050px;
+            height: 600px;
+            display: flex;
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Left side: Image */
+        .image-container {
+            width: 50%;
+            background: linear-gradient(135deg, #ff7e5f, #ffb88c);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        /* Right side: Login form */
+        .form-container {
+            width: 40%;
+            padding: 30px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background-color: white;
+
+        }
+
+        .title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #c54b3a;
+            margin-bottom: 30px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+        }
+
+        .content form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-box {
+            margin-bottom: 10px;
+        }
+
+        .input-box label {
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .input-box input {
+            width: 100%;
+            padding: 10px;
+            font-size: 1rem;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            outline: none;
+        }
+
+        .input-box input:focus {
+            border-color: #c54b3a;
+        }
+
+        .button input[type="submit"] {
+            width: 100%;
+            padding: 12px;
+            background-color: #c54b3a;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .button input[type="submit"]:hover {
+            background-color: #ff7e5f;
+        }
+
+        .messages {
+            margin-top: 20px;
+        }
+
+        .alert-info {
+            background-color: #d9edf7;
+            padding: 10px;
+            border-radius: 5px;
+            color: #31708f;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-container">
+        <!-- Left side: Image -->
+        <div class="image-container">
+            <img src="{% static 'images/1.png' %}" alt="Event Image">
+        </div>
+
+        <!-- Right side: Login Form -->
+        <div class="form-container">
+            <div class="title">Login</div>
+            <div class="content">
+                <form action="" method="post">
+                    {% csrf_token %}
+                    <div class="user-details">
+                        <div class="input-box">
+                            <label for="username">Username:</label>
+                            <input type="text" id="username" name="username" required>
+                        </div>
+                        <div class="input-box">
+                            <label for="password">Password:</label>
+                            <input type="password" id="password" name="password" required>
+                        </div>
+                    </div>
+                    <div class="button">
+                        <input type="submit" name="submit" value="Login">
+                    </div>
+                </form>
+
+                <div class="account-info">
+                    <p>Don't have an account? <a href="{% url 'reg' %}">Sign up here</a>.</p>
+                </div>
+
+                <!-- Displaying messages if present -->
+                {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                    <div class="alert alert-info">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
