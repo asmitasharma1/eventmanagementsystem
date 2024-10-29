@@ -1,0 +1,78 @@
+{% extends 'base_organizer.html' %}
+{% load static %}
+
+{% block title %}Delete Event - {{ event.name }}{% endblock %}
+
+{% block content %}
+<div class="delete-event">
+    <div class="confirmation-card">
+        <div class="warning-icon">⚠️</div>
+        <h2>Delete Event</h2>
+        <p>Are you sure you want to delete "{{ event.name }}"? This action cannot be undone.</p>
+
+        <form method="POST" class="delete-form" action="{% url 'delete_event' event_id=event.id %}">
+            {% csrf_token %}
+            <div class="button-group">
+                <button type="submit" class="btn btn-danger">Delete Event</button>
+                <a href="{% url 'manageevent' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .delete-event {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 60vh;
+    }
+
+    .confirmation-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(26, 20, 18, 0.06);
+        text-align: center;
+        max-width: 500px;
+        width: 100%;
+    }
+
+    .warning-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+
+    .confirmation-card h2 {
+        color: #ef4444;
+        margin-bottom: 1rem;
+    }
+
+    .confirmation-card p {
+        color: #666;
+        margin-bottom: 2rem;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+    }
+
+    .btn-danger {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-danger:hover {
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+    }
+</style>
+{% endblock %}

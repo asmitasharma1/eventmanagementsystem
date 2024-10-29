@@ -2,43 +2,303 @@
 {% load static %}
 
 {% block title %}
-Manage Events
+    Manage Events
 {% endblock %}
 
 {% block content %}
-<h2>Your Registered Events</h2>
-<table>
-    <thead>
-        <tr>
-            <th>Event Name</th>
-            <th>Date</th>
-            <th>Time</th>
-            <th>Location</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for event in events %}
-        <tr>
-            <td>{{ event.name }}</td>
-            <td>{{ event.date }}</td>
-            <td>{{ event.time }}</td>
-            <td>{{ event.location }}</td>
-            <td>
-                <a href="">View</a>
-                <a href="">Edit</a>
-                <a href="">Delete</a>
-            </td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="4">No events registered.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="events-management">
+    <div class="section-header">
+        <h2>Your Registered Events</h2>
+        <div class="header-actions">
+            <a href="{% url 'create_event' %}" class="btn btn-primary">
+                <span class="btn-icon">+</span> Add New Event
+            </a>
+            
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table class="events-table">
+            <thead>
+                <tr>
+                    <th>Event Name</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Location</th>
+                    <th class="actions-column">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for event in events %}
+                <tr>
+                    <td class="event-name">{{ event.name }}</td>
+                    <td>{{ event.date }}</td>
+                    <td>{{ event.time }}</td>
+                    <td>{{ event.location }}</td>
+                    <td class="actions-cell">
+                        <div class="action-buttons">
+                            <a href="{% url 'view_event' event.id %}" class="btn-action view-btn" title="View Event">
+                                <span class="action-icon">👁</span>
+                            </a>
+                            <a href="{% url 'edit_event' event.id %}" class="btn-action edit-btn" title="Edit Event">
+                                <span class="action-icon">✏️</span>
+                            </a>
+                            <a href="{% url 'delete_event' event.id %}" class="btn-action delete-btn" title="Delete Event">
+                                <span class="action-icon">🗑️</span>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr class="empty-state">
+                    <td colspan="5">
+                        <div class="empty-state-content">
+                            <span class="empty-icon">📅</span>
+                            <p>No events registered.</p>
+                            <a href="" class="btn btn-primary">Create Your First Event</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_css %}
+<style>
+    /* Events Management Container */
+    .events-management {
+        padding: 1.5rem;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(26, 20, 18, 0.1);
+    }
 
+    /* Section Header */
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid rgba(216, 84, 27, 0.1);
+    }
+
+    .section-header h2 {
+        color: #1a1412;
+        font-size: 1.5rem;
+        font-weight: 600;
+        letter-spacing: -0.3px;
+    }
+
+    /* Table Container */
+    .table-container {
+        overflow-x: auto;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(26, 20, 18, 0.06);
+    }
+
+    /* Table Styles */
+    .events-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        white-space: nowrap;
+    }
+
+    .events-table thead {
+        background: linear-gradient(180deg, #f8f7f6 0%, #f3f1ef 100%);
+    }
+
+    .events-table th {
+        padding: 1rem 1.5rem;
+        text-align: left;
+        color: #1a1412;
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 2px solid rgba(216, 84, 27, 0.1);
+    }
+
+    .events-table td {
+        padding: 1rem 1.5rem;
+        color: #1a1412;
+        border-bottom: 1px solid rgba(26, 20, 18, 0.08);
+        transition: background-color 0.2s ease;
+    }
+
+    .events-table tbody tr:hover td {
+        background-color: rgba(216, 84, 27, 0.02);
+    }
+
+    /* Event Name Column */
+    .event-name {
+        font-weight: 500;
+        color: #d8541b;
+    }
+
+    /* Actions Column */
+    .actions-column {
+        text-align: center;
+        width: 180px;
+    }
+
+    .actions-cell {
+        padding: 0.5rem !important;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+    }
+
+    .btn-action {
+        padding: 0.5rem;
+        border-radius: 6px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-action:hover {
+        background: rgba(216, 84, 27, 0.1);
+        transform: translateY(-1px);
+    }
+
+    .action-icon {
+        font-size: 1.25rem;
+    }
+
+    /* View Button */
+    .view-btn:hover {
+        background: rgba(52, 152, 219, 0.1);
+    }
+
+    /* Edit Button */
+    .edit-btn:hover {
+        background: rgba(46, 204, 113, 0.1);
+    }
+
+    /* Delete Button */
+    .delete-btn:hover {
+        background: rgba(231, 76, 60, 0.1);
+    }
+
+    /* Empty State */
+    .empty-state td {
+        padding: 3rem !important;
+    }
+
+    .empty-state-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        color: #666;
+    }
+
+    .empty-icon {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Primary Button */
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 6px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #d8541b 0%, #bf4516 100%);
+        color: white;
+        border: none;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #bf4516 0%, #a63912 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(216, 84, 27, 0.2);
+    }
+
+    .btn-icon {
+        font-weight: 600;
+        font-size: 1.1em;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .section-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .events-table {
+            font-size: 0.875rem;
+        }
+
+        .events-table th,
+        .events-table td {
+            padding: 0.75rem 1rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .actions-column {
+            width: 60px;
+        }
+
+        .btn-action {
+            padding: 0.375rem;
+        }
+
+        .action-icon {
+            font-size: 1rem;
+        }
+    }
+
+    /* Additional Enhancements */
+    .events-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Loading State Animation */
+    @keyframes shimmer {
+        0% {
+            background-position: -1000px 0;
+        }
+        100% {
+            background-position: 1000px 0;
+        }
+    }
+
+    .loading {
+        background: linear-gradient(
+            to right,
+            rgba(216, 84, 27, 0.1) 8%,
+            rgba(216, 84, 27, 0.2) 18%,
+            rgba(216, 84, 27, 0.1) 33%
+        );
+        background-size: 2000px 100%;
+        animation: shimmer 2s infinite linear;
+    }
+</style>
 {% endblock %}

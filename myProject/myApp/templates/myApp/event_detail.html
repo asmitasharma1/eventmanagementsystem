@@ -4,7 +4,230 @@
 {% endblock %}
 
 {% block content %}
-<h2>{{ event.name }}</h2>
-<img src="{{ event.img.url }}" alt="{{ event.name }}" height="250px" width="300px">
-<p>{{ event.desc }}</p>
+<style>
+    /* Event Container */
+.event-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(197, 75, 58, 0.1);
+    border: 1px solid rgba(247, 134, 100, 0.1);
+}
+
+/* Event Title */
+.event-container h2 {
+    color: #c54b3a;
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    position: relative;
+}
+
+.event-container h2:after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, #c54b3a, #f78664);
+    border-radius: 3px;
+}
+
+/* Event Image Container */
+.event-image {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 30px;
+    box-shadow: 0 8px 20px rgba(197, 75, 58, 0.15);
+    background-color: #fff; /* Add background color to prevent transparency */
+}
+
+/* Event Image - Updated for better quality */
+.event-image img {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 12px;
+    transition: transform 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+    image-rendering: -webkit-optimize-contrast; /* Improve image sharpness on webkit browsers */
+    image-rendering: crisp-edges; /* Modern browsers */
+    -webkit-backface-visibility: hidden; /* Prevent blurriness during transforms */
+    backface-visibility: hidden;
+    transform: translateZ(0); /* Force GPU acceleration */
+    will-change: transform; /* Optimize transform animations */
+}
+
+.event-image:hover img {
+    transform: scale(1.03); /* Reduced scale for smoother transformation */
+}
+
+/* Event Details Section */
+.event-details {
+    padding: 25px;
+    background-color: #fff;
+    border-radius: 12px;
+    margin-top: 30px;
+    border: 1px solid rgba(247, 134, 100, 0.2);
+    box-shadow: 0 4px 15px rgba(197, 75, 58, 0.08);
+}
+
+/* Event Description */
+.event-description {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #555;
+    margin-bottom: 25px;
+    padding-bottom: 25px;
+    border-bottom: 2px solid rgba(247, 134, 100, 0.2);
+}
+
+/* Event Info Grid */
+.event-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.event-info-item {
+    padding: 20px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(197, 75, 58, 0.08);
+    border: 1px solid rgba(247, 134, 100, 0.1);
+    transition: all 0.3s ease;
+}
+
+.event-info-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(197, 75, 58, 0.15);
+    border-color: rgba(247, 134, 100, 0.3);
+}
+
+.event-info-item strong {
+    display: block;
+    color: #c54b3a;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.event-info-item p {
+    color: #555;
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+/* Download Ticket Button */
+.download-ticket {
+    display: inline-block;
+    width: 100%;
+    padding: 16px 32px;
+    background: linear-gradient(135deg, #c54b3a, #f78664);
+    color: white;
+    border-radius: 12px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 1.1rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    margin-top: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.download-ticket:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: 0.5s;
+}
+
+.download-ticket:hover {
+    background: linear-gradient(135deg, #f78664, #c54b3a);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(197, 75, 58, 0.3);
+}
+
+.download-ticket:hover:before {
+    left: 100%;
+}
+
+.download-ticket:active {
+    transform: translateY(0);
+}
+
+/* Responsive Design - Updated for better image handling */
+@media (max-width: 768px) {
+    .event-container {
+        margin: 20px;
+        padding: 20px;
+    }
+    
+    .event-container h2 {
+        font-size: 2rem;
+    }
+    
+    .event-image img {
+        height: 250px; /* Reduced height for mobile */
+    }
+    
+    .event-info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .event-details {
+        padding: 20px;
+    }
+}
+
+/* High-DPI (Retina) Screens */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .event-image img {
+        image-rendering: auto; /* Better handling for high-DPI displays */
+    }
+}
+
+/* Selection styling */
+::selection {
+    background: rgba(247, 134, 100, 0.2);
+    color: #c54b3a;
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+</style>
+
+<div class="event-container">
+    <h2>{{ event.name }}</h2>
+    <div class="event-image">
+        <img src="{{ event.img.url }}" alt="{{ event.name }}">
+    </div>
+    <div class="event-details">
+        <p class="event-description">{{ event.desc }}</p>
+        <p><strong>Date:</strong> {{ event.date }}</p>
+        <p><strong>Time:</strong> {{ event.time }}</p>
+        <p><strong>Location:</strong> {{ event.location }}</p>
+        <p><strong>Organizer:</strong> {{ event.organizer.username }}</p>
+    </div>
+    <a href="{% url 'book_event' event.id %}" class="download-ticket">Book Now</a>
+</div>
 {% endblock %}

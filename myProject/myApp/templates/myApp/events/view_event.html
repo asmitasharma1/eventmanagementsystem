@@ -1,0 +1,108 @@
+{% extends 'base_organizer.html' %}
+{% load static %}
+
+{% block title %}View Event - {{ event.name }}{% endblock %}
+
+{% block content %}
+<div class="event-detail">
+    <div class="section-header">
+        <h2>Event Details</h2>
+        <div class="header-actions">
+            <a href="{% url 'edit_event' event.id %}" class="btn btn-secondary">Edit Event</a>
+            <a href="{% url 'manageevent' %}" class="btn btn-primary">Back to Events</a>
+        </div>
+    </div>
+
+    <div class="event-card">
+        {% if event.image %}
+        <div class="event-image">
+            <img src="{{ event.image.url }}" alt="{{ event.name }}">
+        </div>
+        {% endif %}
+
+        <div class="event-info">
+            <h3>{{ event.name }}</h3>
+            
+            <div class="info-group">
+                <label>Date:</label>
+                <span>{{ event.date }}</span>
+            </div>
+
+            <div class="info-group">
+                <label>Time:</label>
+                <span>{{ event.time }}</span>
+            </div>
+
+            <div class="info-group">
+                <label>Location:</label>
+                <span>{{ event.location }}</span>
+            </div>
+
+            <div class="info-group">
+                <label>Capacity:</label>
+                <span>{{ event.capacity }} attendees</span>
+            </div>
+
+            <div class="info-group">
+                <label>Description:</label>
+                <p>{{ event.description }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .event-detail {
+        padding: 2rem;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(26, 20, 18, 0.06);
+    }
+
+    .event-card {
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-top: 2rem;
+    }
+
+    .event-image {
+        width: 100%;
+        height: 300px;
+        overflow: hidden;
+    }
+
+    .event-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .event-info {
+        padding: 2rem;
+    }
+
+    .event-info h3 {
+        color: #d8541b;
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .info-group {
+        margin-bottom: 1rem;
+    }
+
+    .info-group label {
+        font-weight: 600;
+        color: #1a1412;
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+
+    .info-group span,
+    .info-group p {
+        color: #666;
+        line-height: 1.6;
+    }
+</style>
+{% endblock %}

@@ -9,6 +9,8 @@
     {% load static %}
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="{% static 'css/aboutstyle.css' %}">
+    <link rel="stylesheet" href="{% static 'css/stylelog.css' %}">
+    {% block extra_css %}{% endblock %}
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
@@ -19,7 +21,7 @@
             if (alertDiv) {
                 alertDiv.style.display = 'none';
             }
-        }, 5000);  // 5000ms = 5 seconds
+        }, 3000);  // 5000ms = 5 seconds
 
         // Toggle the profile overview
         function toggleProfile() {
@@ -31,55 +33,113 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <style>
         body {
-            margin: 0;
-            padding: 50px 0 0;
-            height: 100%;
-        }
+    margin: 0;
+    padding: 50px 0 0;
+    height: 100%;
+}
 
-        .navbar {
-            margin-bottom: 0;
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1000;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
+.navbar {
+    margin-bottom: 0;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    background: linear-gradient(135deg, #c54b3a 0%, #f78664 100%);
+    border: none;
+}
 
-        .alert {
-            margin: 10px 0;
-        }
+.navbar-brand {
+    color: #fff !important;
+    font-weight: 600;
+}
 
-        .navbar-nav>li>a {
-            padding: 15px 20px;
-        }
+.navbar-nav > li > a {
+    padding: 15px 20px;
+    color: #fff !important;
+    transition: all 0.3s ease;
+}
 
-        .container {
-            padding: 0;
-        }
+.navbar-nav > li > a:hover {
+    background-color: rgba(183, 178, 123, 0.2) !important;
+    color: #b4b17b !important;
+}
 
-        /* Profile overview dropdown styling */
-        #profileOverview {
-            display: none;
-            position: absolute;
-            right: 10px;
-            top: 50px;
-            /* Adjust based on navbar height */
-            background-color: white;
-            border: 1px solid #ccc;
-            padding: 10px;
-            z-index: 1000;
-            width: 200px;
-        }
+.navbar-nav > li.active > a {
+    background-color: rgba(151, 117, 74, 0.3) !important;
+    color: #fff !important;
+}
 
-        .profile-container {
-            position: relative;
-            display: inline-block;
-        }
+.container {
+    padding: 0;
+}
 
-        .navbar-right {
-            margin-right: 10px;
-            /* Spacing for the right side */
-        }
+/* Profile overview styling */
+#profileOverview {
+    display: none;
+    position: absolute;
+    right: 10px;
+    top: 50px;
+    background-color: white;
+    border: 1px solid #f78664;
+    padding: 10px;
+    z-index: 1000;
+    width: 200px;
+    box-shadow: 0 2px 10px rgba(197, 75, 58, 0.1);
+}
+
+.profile-container {
+    position: relative;
+    display: inline-block;
+}
+
+.navbar-right {
+    margin-right: 10px;
+}
+
+/* Alert styling */
+.alert {
+    margin: 10px 0;
+}
+
+.alert-success {
+        background-color: #d4edda; /* Light green */
+        color: #155724;
+        border: 1px solid #c3e6cb;
+        padding: 8px 15px;
+        margin: 5px 0;
+    }
+
+    /* Danger alert with lighter red */
+    .alert-danger {
+        background-color: #f8d7da; /* Light red */
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+        padding: 8px 15px;
+        margin: 5px 0;
+    }
+
+    /* Info alert with lighter brown */
+    .alert-info {
+        background-color: #e2e3e5; /* Light brown/gray */
+        color: #383d41;
+        border: 1px solid #d6d8db;
+        padding: 8px 15px;
+        margin: 5px 0;
+    }
+/* Glyphicon colors */
+.glyphicon {
+    color: #fff;
+}
+
+/* Profile text color */
+.navbar-nav.navbar-right > li > a {
+    color: #fff !important;
+}
+
+.navbar-nav.navbar-right > li > a:hover {
+    color: #b4b17b !important;
+}
     </style>
 </head>
 
@@ -96,12 +156,12 @@
                 {% if user.is_authenticated %}
                 <li class="{% if request.path == '/events/' %}active{% endif %}"><a href="{% url 'events' %}">Events</a>
                 </li>
-                <li class="{% if request.path == '/booking/' %}active{% endif %}"><a
-                        href="{% url 'booking' %}">Booking</a></li>
+                <li class="{% if request.path == '/myBooking/' %}active{% endif %}"><a
+                        href="{% url 'myBooking' %}">My Booking</a></li>
                 <li class="{% if request.path == '/contact/' %}active{% endif %}"><a
                         href="{% url 'contact' %}">Contact</a></li>
-                <li class="{% if request.path == '/submitevent' %}active{% endif %}"><a
-                        href="{% url 'submitevent' %}">Submit event</a></li>
+                <!-- <li class="{% if request.path == '/submitevent' %}active{% endif %}"><a
+                        href="{% url 'submitevent' %}">Submit event</a></li> -->
                 <li><a href="{% url 'logout' %}"><span class="glyphicon glyphicon-log-out"></span> LogOut</a></li>
                 {% endif %}
             </ul>

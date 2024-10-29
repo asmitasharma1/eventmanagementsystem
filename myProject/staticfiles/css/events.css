@@ -1,0 +1,150 @@
+/* events.css */
+
+/* Main container styling */
+.container {
+    padding: 2rem 0;
+    text-align: center;
+}
+
+/* Page title styling */
+h2.text-center {
+    color: #c54b3a;
+    font-size: 2.5rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Search bar styling */
+.search-bar {
+    background-color: #fff;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(197, 75, 58, 0.1);
+    margin-bottom: 2rem;
+}
+
+.search-bar .form-control {
+    border: 2px solid #f78664;
+    border-radius: 25px;
+    padding: 0.75rem 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.search-bar .form-control:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(247, 134, 100, 0.3);
+    border-color: #c54b3a;
+}
+
+.search-bar .btn-primary {
+    background-color: #c54b3a;
+    border: none;
+    border-radius: 25px;
+    padding: 0.75rem 2rem;
+    transition: all 0.3s ease;
+}
+
+.search-bar .btn-primary:hover {
+    background-color: #f78664;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(197, 75, 58, 0.2);
+}
+
+/* Card styling */
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    margin: 1rem;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(197, 75, 58, 0.2);
+}
+
+.card-img-top {
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.card:hover .card-img-top {
+    transform: scale(1.05);
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.card-title {
+    color: #c54b3a;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.card-text {
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+/* Download ticket button styling */
+.download-ticket {
+    display: inline-block;
+    background-color: #f78664;
+    color: white;
+    text-decoration: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    margin: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.download-ticket:hover {
+    background-color: #c54b3a;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(197, 75, 58, 0.2);
+}
+
+/* Responsive grid layout */
+@media (max-width: 992px) {
+    .card {
+        width: 100% !important;
+        margin: 1rem 0;
+    }
+}
+
+/* Loading animation for images */
+.card-img-top {
+    position: relative;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Selection color */
+::selection {
+    background-color: rgba(247, 134, 100, 0.3);
+    color: #c54b3a;
+}

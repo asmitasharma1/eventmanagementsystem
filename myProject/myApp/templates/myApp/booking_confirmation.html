@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Booking Confirmation
+{% endblock %}
+
+{% block content %}
+<style>
+    .confirmation-container {
+        text-align: center;
+        margin: 2rem auto;
+        padding: 2rem;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        background: #fff;
+        /* White background */
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .download-button {
+        margin-top: 2rem;
+        padding: 1rem 2rem;
+        font-size: 1.2rem;
+        color: #fff;
+        background: linear-gradient(135deg, #c54b3a, #f78664);
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+
+    .download-button:hover {
+        background: linear-gradient(135deg, #df9ef8, #f78664);
+    }
+</style>
+
+<div class="confirmation-container">
+    <h2>Booking Confirmed!</h2>
+    <p>Your booking has been successfully confirmed. Thank you!</p>
+    {% if ticket_template_url %}
+    <h3>Your Ticket:</h3>
+    <img src="{{ ticket_template_url }}" alt="Ticket Template" style="max-width: 100%; height: auto;" />
+    <button class="download-button"
+        onclick="downloadTicketWithImage('{{ ticket_template_url }}', '{{ event.name }}')">Download Ticket</button>
+    {% else %}
+    <p>No ticket template available.</p>
+    {% endif %}
+</div>
+
+<script>
+    function downloadTicketWithImage(ticketTemplateUrl, eventName) {
+        // Generate a unique ticket number
+        const ticketNumber = Date.now() + Math.floor(Math.random() * 1000); // Unique number based on timestamp
+
+        // Create an image element to download
+        const img = new Image();
+        img.src = ticketTemplateUrl;
+
+        img.onload = function () {
+            // Create a canvas element
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Set the canvas size to the image size
+            canvas.width = img.width;
+            canvas.height = img.height;
+
+            // Draw the image on the canvas
+            ctx.drawImage(img, 0, 0);
+
+            // Add ticket number as text on the image
+            ctx.font = "30px Arial";
+            ctx.fillStyle = "black"; // Text color
+            ctx.fillText("Ticket #: " + ticketNumber, 20, 50); // Positioning text on the canvas
+
+            // Create a link element for downloading the image
+            const link = document.createElement('a');
+            link.download = `${eventName.replace(/\s+/g, '_')}_ticket_${ticketNumber}.png`; // Filename
+
+            // Convert canvas to data URL and set as link href
+            link.href = canvas.toDataURL("image/png");
+
+            // Trigger the download
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
+        img.onerror = function () {
+            console.error("Image failed to load:", ticketTemplateUrl);
+        };
+    }
+</script>
+
+{% endblock %}

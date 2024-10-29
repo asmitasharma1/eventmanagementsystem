@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}
+My Bookings
+{% endblock %}
+
+{% block content %}
+<div class="my-bookings-container">
+    <h2>My Bookings</h2>
+
+    {% if bookings %}
+    <table class="bookings-table">
+        <thead>
+            <tr>
+                <th>Event Name</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Location</th>
+                <th>Organizer</th>
+                <!-- <th>Number of Tickets</th> -->
+                <th>Booking Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for booking in bookings %}
+            <tr>
+                <td>{{ booking.event.name }}</td>
+                <td>{{ booking.event.date }}</td>
+                <td>{{ booking.event.time }}</td>
+                <td>{{ booking.event.location }}</td>
+                <td>{{ booking.event.organizer.username }}</td>
+                <!-- <td>{{ booking.number_of_tickets }}</td> -->
+                <td>{{ booking.booking_date|date:"Y-m-d H:i:s" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>You have no bookings yet.</p>
+    {% endif %}
+</div>
+
+<style>
+    /* Container Styling */
+    .my-bookings-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Title Styling */
+    .my-bookings-container h2 {
+        font-size: 24px;
+        color: #333;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    /* Table Styling */
+    .bookings-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    .bookings-table th,
+    .bookings-table td {
+        padding: 12px;
+        border: 1px solid #ddd;
+        text-align: left;
+    }
+
+    .bookings-table th {
+        background-color: #c54b3a;
+        /* Using your project color */
+        color: #fff;
+        font-weight: bold;
+    }
+
+    .bookings-table tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+
+    .bookings-table tr:hover {
+        background-color: #f1f1f1;
+    }
+
+    /* No Bookings Message */
+    .my-bookings-container p {
+        font-size: 18px;
+        text-align: center;
+        color: #666;
+    }
+</style>
+{% endblock %}

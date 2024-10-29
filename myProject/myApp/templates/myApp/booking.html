@@ -1,20 +1,138 @@
 {% extends 'base.html' %}
 
-{%block title%}
-Booking
+{% block title %}
+Book {{ event.name }}
 {% endblock %}
 
-{%block content%}
-<div class="container p-3 text-center">
-    <h1>Book Your Events</h1><br>
-    <form action="" method="POST">
+{% block content %}
+<style>
+    /* Full page gradient background */
+    body {
+        background: linear-gradient(135deg, #c54b3a, #f78664, #df9ef8);
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
 
-        {%csrf_token%}
+    .booking-container {
+        max-width: 900px;
+        margin: 3rem auto;
+        padding: 2.5rem;
+        background: white;
+        color: #333;
+        border-radius: 10px;
+        box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.3);
+        transition: transform 0.3s;
+    }
 
-        {{form.as_p}}
-        <button class="btn ">Book Now</button>
+    .booking-container:hover {
+        transform: translateY(-3px);
+    }
 
+    .booking-container h2 {
+        text-align: center;
+        margin-bottom: 2rem;
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #c54b3a;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 1rem;
+        font-size: 1.1rem;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        color: #333;
+        transition: border-color 0.3s;
+    }
+
+    .form-control:focus {
+        border-color: #c54b3a;
+        outline: none;
+    }
+
+    .btn {
+        width: 100%;
+        padding: 1rem;
+        font-size: 1.2rem;
+        color: #fff;
+        background: linear-gradient(135deg, #c54b3a, #f78664);
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background-color 0.3s;
+    }
+
+    .btn:hover {
+        background: linear-gradient(135deg, #df9ef8, #f78664);
+    }
+
+    @media (max-width: 768px) {
+        .booking-container {
+            padding: 2rem;
+        }
+
+        .btn {
+            font-size: 1.1rem;
+        }
+    }
+</style>
+
+<div class="booking-container">
+    <h2>Booking for {{ event.name }}</h2>
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required class="form-control">
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" value="{{ request.user.email }}" required readonly
+                class="form-control">
+        </div>
+
+        <div class="form-group">
+            <label for="phone">Phone Number:</label>
+            <input type="tel" id="phone" name="phone" class="form-control">
+        </div>
+
+        <!-- New Ticket Price Field -->
+        <div class="form-group">
+            <label for="ticket_price">Ticket Price:</label>
+            <input type="text" id="ticket_price" name="ticket_price" value="{{ event.ticket_price }}" readonly
+                class="form-control">
+        </div>
+
+        <div class="form-group">
+            <label for="payment_info">Payment Information:</label>
+            <input type="text" id="payment_info" name="payment_info" placeholder="Card Number" required
+                class="form-control">
+            <input type="text" id="expiry_date" name="expiry_date" placeholder="Expiry Date (MM/YY)" required
+                class="form-control">
+            <input type="text" id="cvv" name="cvv" placeholder="CVV" required class="form-control">
+        </div>
+
+        <button type="submit" class="btn">Confirm Booking</button>
     </form>
 </div>
-
 {% endblock %}

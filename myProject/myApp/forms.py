@@ -6,9 +6,9 @@ class DateInput(forms.DateInput):
 class EventForm(forms.ModelForm):
     class Meta:
         model = Event
-        fields = ['name', 'desc','img', 'date', 'time', 'location']  # Exclude 'approved'
+        fields = ['name', 'desc','img', 'date', 'time', 'location', 'ticket_template','number_of_tickets', 'ticket_price','is_free'] 
     
-    date = forms.DateField(widget=DateInput())  # Use the DateInput class
+    date = forms.DateField(widget=DateInput())  
     time = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time'}))
 
 class BookingForm(forms.ModelForm):

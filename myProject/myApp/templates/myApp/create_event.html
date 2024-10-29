@@ -1,32 +1,111 @@
 {% extends 'base_organizer.html' %}
 
-{%block title%}
+{% block title %}
 Submit Event
 {% endblock %}
 
-{%block content%}
+{% block content %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f9f9f9; /* Light background color */
+        margin: 0;
+        padding: 10px;
+    }
 
-<h1>Register Your Events</h1><br>
+    h1 {
+        color: #c54b3a; /* Header color */
+        text-align: center;
+        margin-bottom: 10px;
+    }
+
+    form {
+        background-color: white; /* White background for the form */
+        border: 1px solid #ccc; /* Light gray border */
+        border-radius: 8px; /* Rounded corners */
+        padding: 10px; /* Padding around the form */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+        max-width: 600px; /* Max width for the form */
+        margin: auto; /* Center the form */
+    }
+
+    label {
+        font-weight: bold; /* Bold labels */
+        margin-top: 10px; /* Spacing above labels */
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    input[type="time"],
+    input[type="file"],
+    textarea,
+    select {
+        width: 100%; /* Full width for inputs */
+        padding: 5px; /* Padding inside inputs */
+        margin: 8px 0; /* Spacing around inputs */
+        border: 1px solid #ccc; /* Light gray border */
+        border-radius: 4px; /* Rounded corners */
+    }
+
+    input[type="checkbox"] {
+        margin-right: 10px; /* Spacing to the right of checkbox */
+    }
+
+    input[type="submit"] {
+        background-color: #c54b3a; /* Submit button color */
+        color: white; /* Text color */
+        padding: 10px 15px; /* Padding for the button */
+        border: none; /* No border */
+        border-radius: 5px; /* Rounded corners */
+        cursor: pointer; /* Pointer cursor on hover */
+        font-size: 16px; /* Font size for button */
+        transition: background-color 0.3s; /* Transition effect */
+    }
+
+    input[type="submit"]:hover {
+        background-color: #b43f32; /* Darker shade on hover */
+    }
+
+    .error-messages {
+        color: red; /* Error message color */
+        margin-top: 10px; /* Spacing above error messages */
+    }
+</style>
+
+<h1>Register Your Events</h1>
 <form method="POST" enctype="multipart/form-data">
     {% csrf_token %}
     <label for="name">Name: </label>
     {{ form.name }}
-    <br><br>
+    <br>
     <label for="desc">Description: </label>
     {{ form.desc }}
-    <br><br>
+    <br>
     <label for="img">Image: </label>
     {{ form.img }}
-    <br><br>
+    <br>
     <label for="date">Date: </label>
     {{ form.date }}
-    <br><br>
+    <br>
     <label for="time">Time: </label>
     {{ form.time }}
-    <br><br>
+    <br>
     <label for="location">Location: </label>
     {{ form.location }}
-    <br><br>
+    <br>
+    <label for="ticket_template">Ticket Image: </label>
+    {{ form.ticket_template }}
+    <br>
+    <label for="is_free">Is this event free?</label>
+    <input type="checkbox" id="is_free" name="is_free">
+    <br>
+    <label for="number_of_tickets">Number of Tickets Available: </label>
+    {{ form.number_of_tickets }}
+    <br>
+    <label for="ticket_price">Ticket Price: </label>
+    {{ form.ticket_price }}
+    <br>
     <input type="submit" value="Submit">
 
     {% if form.errors %}
