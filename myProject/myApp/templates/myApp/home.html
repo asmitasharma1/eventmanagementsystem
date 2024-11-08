@@ -13,7 +13,7 @@ Home | Event Pro
     /* General Styling */
     body {
         font-family: 'Arial', sans-serif;
-        font-size: 1.5rem;
+        /* font-size: 1.5rem; */
     }
 
     section {
@@ -209,7 +209,11 @@ Home | Event Pro
     <div class="container">
         <h1>Welcome to Event Pro</h1>
         <p>Your one-stop solution for managing and organizing your events seamlessly.</p>
-        <a href="{% url 'events' %}" class="btn btn-light">View Upcoming Events</a>
+        {% if user.is_authenticated %}
+            <a href="{% url 'events' %}" class="btn btn-light">View Upcoming Events</a>
+        {% else %}
+            <a href="{% url 'login' %}" class="btn btn-light">View Upcoming Events</a>
+        {% endif %}
     </div>
 </section>
 
@@ -237,41 +241,35 @@ Home | Event Pro
 <!-- Featured Events Section -->
 <section id="featured-events">
     <div class="container">
-        <h2>Our Featured Events</h2>
+        <h2>Our Top Events</h2>
         <div class="row">
+            {% for event in featured_events %}
             <div class="col-md-4">
                 <div class="event-box">
-                    <img src="{% static 'images/event1.jpg' %}" alt="Event 1">
-                    <h3>Corporate Gala</h3>
-                    <p>Experience a night of networking and celebration with top professionals in your field.</p>
+                    <img src="{{ event.img.url }}" alt="{{ event.name }}">
+                    <h3>{{ event.name }}</h3>
+                    <p>{{ event.desc }}</p>
+                    <!-- <p><strong>Total Attendees:</strong> {{ event.total_attendees }}</p> -->
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="event-box">
-                    <img src="{% static 'images/event2.jpg' %}" alt="Event 2">
-                    <h3>Charity Run</h3>
-                    <p>Join us for a charity run and contribute towards a noble cause in your community.</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="event-box">
-                    <img src="{% static 'images/event3.jpg' %}" alt="Event 3">
-                    <h3>Music Festival</h3>
-                    <p>Celebrate music and culture with top artists from around the world.</p>
-                </div>
-            </div>
+            {% empty %}
+            <p>No top events available.</p>
+            {% endfor %}
         </div>
     </div>
 </section>
 
-<!-- Call-to-Action Section -->
-<section id="cta">
-    <div class="container">
-        <h2>Ready to Plan Your Next Event?</h2>
-        <p>Sign up now and start organizing your event with Event Pro.</p>
-        <a href="{% url 'reg' %}" class="btn">Get Started</a>
-    </div>
-</section>
+
+{% if not user.is_authenticated %}
+    <!-- Call-to-Action Section (Only visible to unauthenticated users) -->
+    <section id="cta">
+        <div class="container">
+            <h2>Ready to Plan Your Next Event?</h2>
+            <p>Sign up now and start organizing your event with Event Pro.</p>
+            <a href="{% url 'reg' %}" class="btn">Get Started</a>
+        </div>
+    </section>
+{% endif %}
 
 <!-- Footer Section -->
 <footer id="footer">

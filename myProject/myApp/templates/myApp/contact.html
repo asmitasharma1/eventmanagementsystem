@@ -1,11 +1,137 @@
 {% extends 'base.html' %}
 
-{%block title%}
-Contact
+{% block title %}
+Contact Us - Event Management
 {% endblock %}
 
-{%block content%}
+{% block content %}
+<div class="contact-container">
+    <h1>Contact Us</h1>
+    <p>We are here to help with your event planning needs. If you have any questions or inquiries, please don’t hesitate to reach out to us. Whether you are a client, vendor, or partner, we look forward to hearing from you!</p>
 
-Contact Page
+    <!-- Contact Form -->
+    <form method="POST" action="/submit_contact_form/">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="name">Your Name</label>
+            <input type="text" id="name" name="name" placeholder="Enter your name" required>
+        </div>
+        <div class="form-group">
+            <label for="email">Your Email</label>
+            <input type="email" id="email" name="email" placeholder="Enter your email" required>
+        </div>
+        <div class="form-group">
+            <label for="subject">Subject</label>
+            <select id="subject" name="subject" required>
+                <option value="Event Inquiry">Event Inquiry</option>
+                <option value="Ticketing Inquiry">Vendor Question</option>
+                <option value="General Support">General Support</option>
+                <option value="Booking Event">Booking Event</option>
+                <option value="Booking Event">Feedback and Suggestions</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="message">Message</label>
+            <textarea id="message" name="message" rows="6" placeholder="Enter your message" required></textarea>
+        </div>
+        <button type="submit">Send Message</button>
+    </form>
+
+    <!-- Additional Contact Information -->
+    <h3>Other Ways to Contact Us</h3>
+    <ul>
+        <li>Email: <a href="mailto:support@youreventmanagement.com">support@youreventmanagement.com</a></li>
+        <li>Phone: +1 234 567 890</li>
+        <li>Office Address: 123 Event Street, Kathmandu, Nepal</li>
+        <li>Follow us on social media:
+            <ul>
+                <li><a href="https://www.facebook.com/youreventpage">Facebook</a></li>
+                <li><a href="https://twitter.com/youreventpage">Twitter</a></li>
+                <li><a href="https://www.instagram.com/youreventpage">Instagram</a></li>
+            </ul>
+        </li>
+    </ul>
+    
+    <p>Your privacy is important to us. All information submitted through this form will be kept confidential and will not be shared with third parties.</p>
+</div>
+
+<style>
+    .contact-container  {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+        text-align: center;
+        color: #333;
+        margin-bottom: 20px;
+    }
+
+    p {
+        color: #666;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    label {
+        color: #333;
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    input, select, textarea {
+        width: 100%;
+        padding: 10px;
+        font-size: 14px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+    }
+
+    button {
+        background-color: #c54b3a;  /* Your project color */
+        color: #fff;
+        padding: 10px 20px;
+        font-size: 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background-color: #a64032;
+    }
+
+    h3 {
+        margin-top: 40px;
+        color: #333;
+    }
+
+    ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    ul li {
+        color: #666;
+    }
+
+    iframe {
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+
+    .form-group select, .form-group textarea {
+        font-size: 14px;
+        padding: 12px;
+    }
+</style>
 
 {% endblock %}

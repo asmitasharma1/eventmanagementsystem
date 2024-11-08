@@ -94,9 +94,10 @@ Book {{ event.name }}
         }
     }
 </style>
-
 <div class="booking-container">
     <h2>Booking for {{ event.name }}</h2>
+
+    {% if is_event_in_future %}
     <form method="POST">
         {% csrf_token %}
 
@@ -116,7 +117,6 @@ Book {{ event.name }}
             <input type="tel" id="phone" name="phone" class="form-control">
         </div>
 
-        <!-- New Ticket Price Field -->
         <div class="form-group">
             <label for="ticket_price">Ticket Price:</label>
             <input type="text" id="ticket_price" name="ticket_price" value="{{ event.ticket_price }}" readonly
@@ -134,5 +134,16 @@ Book {{ event.name }}
 
         <button type="submit" class="btn">Confirm Booking</button>
     </form>
+    {% else %}
+    <p style="text-align: center; color: #c54b3a; font-size: 1.2rem;">
+        Booking is closed as this event has already passed.
+    </p>
+    <div style="text-align: center; margin-top: 1.5rem;">
+        <a href="{% url 'events' %}" class="btn"
+            style="display: inline-block; padding: 0.8rem 2rem; font-size: 1.1rem; color: white; background-color: #c54b3a; border-radius: 5px; text-decoration: none;">Back
+            to Events</a>
+    </div>
+    {% endif %}
+
 </div>
 {% endblock %}

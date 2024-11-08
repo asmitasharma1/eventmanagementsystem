@@ -1,3 +1,4 @@
+import math
 from pyexpat.errors import messages
 import random
 import time
@@ -8,11 +9,19 @@ from .models import Event,Booking
 from .forms import BookingForm
 from django.views.generic import ListView
 from django.contrib import messages
-from datetime import datetime
+from datetime import datetime, timezone
+from django.utils import timezone
+from django.urls import reverse
 from django.shortcuts import render
 from django.http import HttpResponse
 from PIL import Image, ImageDraw, ImageFont
 import io
+from django.db.models import Q
+from geopy.distance import geodesic
+import stripe
+stripe.api_key = settings.STRIPE_SECRET_KEY
+from django.utils.timezone import now
+from django.db.models import Count
 
 def download_ticket(request, event_id, ticket_number):
     event = get_object_or_404(Event, id=event_id)
@@ -35,6 +44,9 @@ def download_ticket(request, event_id, ticket_number):
         # Serve the image as a downloadable file
         response = HttpResponse(img_io, content_type="image/png")
         response['Content-Disposition'] = f'attachment; filename="ticket_{ticket_number}.png"'
+
+        response['Location'] = reverse('myBooking')  # Adjust if 'myBooking' is named differently in urls.py
+        response.status_code = 303  # HTTP 303 See Other for immediate redirect after download
         return response
     else:
         return HttpResponse("Ticket template not available for this event.", status=404)
@@ -47,8 +59,16 @@ def events_view(request):
     return render(request, 'myApp/events.html', {'eve': events})
     
 def home(request):
-    return render(request, "myApp/home.html")
+    # Annotate each event with total attendees and order by the most attended
+    featured_events = (
+        Event.objects
+        .annotate(total_attendees=Count('bookings'))  
+        .order_by('-total_attendees')[:3]  # Get top 3 events based on total attendees
+    )
 
+    return render(request, "myApp/home.html", {
+        'featured_events': featured_events,
+    })
 def reg(request):
     return render(request, "myApp/reg.html")
 
@@ -59,19 +79,58 @@ def login(request):
 def about(request):
     return render(request,"myApp/about.html")
 
+# Function to calculate the distance using the Haversine formula
+def haversine(lat1, lon1, lat2, lon2):
+    # Radius of the Earth in kilometers
+    R = 6371.0
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = math.sin(dlat / 2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2)**2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    distance = R * c
+    return distance
+
 def events(request):
     search_query = request.GET.get('q', '')  # Get the search query from the URL
+    user_lat = request.GET.get('user_lat')   # Get user latitude
+    user_lon = request.GET.get('user_lon')   # Get user longitude
+    nearby = request.GET.get('nearby', False) 
 
+    events = Event.objects.all()  # Default to all events
+
+    current_time = now()
     if search_query:
         # Filter events that contain the search query in their name or description
         events = Event.objects.filter(name__icontains=search_query) | Event.objects.filter(desc__icontains=search_query)
     else:
         events = Event.objects.all()  # Get all events if no search query is provided
 
+    if nearby and user_lat and user_lon:
+        user_location = (float(user_lat), float(user_lon))
+        nearby_events = []
+        for event in events:
+            event_location = (event.latitude, event.longitude)  # Ensure events have lat/lon fields
+            distance = geodesic(user_location, event_location).miles
+            if distance <= 10:  # Example: 10 miles radius
+                nearby_events.append(event)
+        # events = nearby_events
+        # Convert nearby events list back to a QuerySet
+        events = Event.objects.filter(id__in=[event.id for event in nearby_events])
+
+    # Separate upcoming and past events
+    upcoming_events = events.filter(date__gte=current_time).order_by('date')  # Events in the future or today
+    past_events = events.filter(date__lt=current_time).order_by('-date')      # Events in the past
+
     dict_eve = {
-        'eve': events,  # Pass the filtered events to the template
-        'search_query': search_query  # Pass the search query to the template
+        'upcoming_events': upcoming_events,
+        'past_events': past_events,
+        # 'eve': events,  # Pass the filtered events to the template
+        'search_query': search_query,  # Pass the search query to the template
+        'user_lat': user_lat,
+        'user_lon': user_lon,
+        'nearby': nearby,
     }
+
 
     return render(request, "myApp/events.html", dict_eve)
 def booking(request):
@@ -117,6 +176,8 @@ def create_event(request):
         if form.is_valid():
             event = form.save(commit=False)  # Don't save to the database yet
             event.organizer = request.user  # Set the current user as the organizer
+            event.latitude = form.cleaned_data.get('latitude')
+            event.longitude = form.cleaned_data.get('longitude')
             try:
                 event.full_clean()  # Validate the event instance (includes the new logic)
                 event.save()  # Save the event to the database
@@ -132,9 +193,31 @@ def event_success(request):
     return render(request, 'event_success.html')  # Render success page
 
 
+@login_required
 def organizer_dashboard(request):
-    return render(request, 'organizer_dashboard.html')
+    # Get the current logged-in user as the organizer
+    organizer = request.user
 
+    # Fetch all events created by this organizer
+    events = Event.objects.filter(organizer=organizer)
+
+    # Categorize events into future and past
+    current_date = timezone.now().date()
+    future_events = []
+    past_events = []
+
+    for event in events:
+        if event.date < current_date:
+            past_events.append(event)
+        else:
+            future_events.append(event)
+
+    context = {
+        'future_events': future_events,
+        'past_events': past_events,
+    }
+
+    return render(request, 'organizer_dashboard.html', context)
 
 def manageevent(request):
     # Fetch the events for the logged-in organizer
@@ -172,7 +255,10 @@ def delete_event(request, event_id):
 def book_event(request, event_id):
     event = get_object_or_404(Event, id=event_id)
     
-    if request.method == 'POST':
+    # Convert timezone.now() to a date to match event.date if event.date is a date
+    is_event_in_future = event.date >= timezone.now().date()
+
+    if request.method == 'POST'and is_event_in_future:
         # Get user details from the form
         name = request.POST.get('name')
         email = request.POST.get('email')
@@ -196,7 +282,7 @@ def book_event(request, event_id):
         
         return redirect('booking_confirmation', event_id=event_id, number_of_tickets=number_of_tickets)  # Redirect to a confirmation page after booking
 
-    return render(request, 'booking.html', {'event': event})
+    return render(request, 'booking.html', {'event': event, 'is_event_in_future': is_event_in_future,})
 def booking_confirmation(request, event_id, number_of_tickets):
     # Retrieve the event based on the event_id
     event = get_object_or_404(Event, id=event_id)
@@ -217,15 +303,71 @@ def booking_confirmation(request, event_id, number_of_tickets):
 
 def myBooking(request):
     if request.user.is_authenticated:
-        bookings = Booking.objects.filter(email=request.user.email)  
+        # Get current date and time
+        current_date = timezone.now()
+
+        # Filter bookings for upcoming and past events
+        upcoming_bookings = Booking.objects.filter(email=request.user.email, event__date__gte=current_date).order_by('event__date')
+        past_bookings = Booking.objects.filter(email=request.user.email, event__date__lt=current_date).order_by('-event__date')
     else:
-        bookings = []
+        upcoming_bookings = []
+        past_bookings = []
 
-    return render(request, 'myBooking.html', {'bookings': bookings})
-
+    return render(request, 'myBooking.html', {
+        'upcoming_bookings': upcoming_bookings,
+        'past_bookings': past_bookings
+    })
+    
+@login_required
 def attendees_view(request):
-    bookings = Booking.objects.select_related('event').all()
+    # Get the current logged-in user as the organizer
+    organizer = request.user
+    
+    # Get all events for this organizer
+    events = Event.objects.filter(organizer=organizer)
+    
+    # Get the selected event ID from the query parameters, if any
+    event_id = request.GET.get('event_id')
+    if event_id:
+        # Filter bookings by the selected event only if it's owned by the organizer
+        bookings = Booking.objects.filter(event_id=event_id, event__organizer=organizer)
+        selected_event_id = int(event_id)
+    else:
+        # Show all bookings for all events owned by the organizer
+        bookings = Booking.objects.filter(event__organizer=organizer)
+        selected_event_id = None
+
     context = {
         'bookings': bookings,
+        'events': events,
+        'selected_event_id': selected_event_id,
     }
+
     return render(request, 'attendees.html', context)
+
+@login_required
+def event_performance_view(request):
+    # Get the current logged-in user as the organizer
+    organizer = request.user
+
+    # Fetch all events created by this organizer
+    events = Event.objects.filter(organizer=organizer)
+
+    # Prepare performance data for each event
+    performance_data = []
+    for event in events:
+        # Calculate total attendees for the event (1 ticket per booking)
+        total_attendees = Booking.objects.filter(event=event).count()
+        current_date = datetime.now(timezone.utc).date()
+        performance_data.append({
+            'event': event,
+            'total_attendees': total_attendees,
+            'is_past': event.date < current_date 
+        })
+
+    context = {
+        'performance_data': performance_data,
+    }
+
+    return render(request, 'event_performance.html', context)
+

@@ -1,57 +1,79 @@
-{% extends 'base_organizer.html' %}
+{% extends "base_organizer.html" %}
 
-{% block title %}
-Organizer Dashboard
-{% endblock %}
+{% block title %}Organizer Dashboard{% endblock %}
 
 {% block content %}
-<div class="dashboard-wrapper">
-    <!-- Main Content Area -->
-    <div class="main-content">
-        <!-- Top Navigation -->
-        <div class="topbar">
-            <h1>Welcome, {{ user.username }}!</h1>
-            <div class="topbar-right">
-                <a href="{% url 'logout' %}" class="btn-logout">Logout</a>
-            </div>
-        </div>
+<div class="organizer-dashboard">
+    <style>
+        .organizer-dashboard {
+            font-family: Arial, sans-serif;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
 
-        <!-- Dashboard Overview -->
-        <section class="dashboard-overview">
-            <div class="overview-card">
-                <h2>Upcoming Events</h2>
-                <ul>
-                    {% for event in upcoming_events %}
-                    <li>
-                        <strong>{{ event.title }}</strong> - {{ event.date }}
-                        <a href="">View Details</a>
-                    </li>
-                    {% empty %}
-                    <li>No upcoming events.</li>
-                    {% endfor %}
-                </ul>
-            </div>
+        .organizer-dashboard h1 {
+            color: #d8541b;
+            margin-bottom: 20px;
+            text-align: center;
+        }
 
-            <div class="overview-card">
-                <h2>Event Statistics</h2>
-                <p>Registrations: {{ total_registrations }}</p>
-                <p>Feedback: {{ average_feedback }} / 5</p>
-            </div>
+        .organizer-dashboard h2 {
+            color: #333;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #d8541b;
+            padding-bottom: 5px;
+        }
 
-            <div class="overview-card">
-                <h2>Manage Your Events</h2>
-                <a href="" class="btn-primary">View All Events</a>
-            </div>
+        .organizer-dashboard ul {
+            list-style-type: none; /* Removes the bullet points */
+            padding: 0;
+            margin: 0;
+        }
 
-            <div class="overview-card">
-                <h2>Attendee Insights</h2>
-                <p>Attendees Registered: {{ total_attendees }}</p>
-                <a href="" class="btn-secondary">View Attendee List</a>
-            </div>
-        </section>
-    </div>
+        .organizer-dashboard li {
+            background-color: white;
+            margin: 5px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .organizer-dashboard li:hover {
+            background-color: #f0f0f0; /* Light gray on hover */
+        }
+
+        .organizer-dashboard p {
+            font-style: italic;
+            color: #888;
+            text-align: center;
+        }
+    </style>
+
+    <h1>Organizer Dashboard</h1>
+
+    <h2>Future Events</h2>
+    {% if future_events %}
+        <ul>
+            {% for event in future_events %}
+                <li>{{ event.name }} - {{ event.date|date:"Y-m-d" }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No future events available.</p>
+    {% endif %}
+
+    <h2>Past Events</h2>
+    {% if past_events %}
+        <ul>
+            {% for event in past_events %}
+                <li>{{ event.name }} - {{ event.date|date:"Y-m-d" }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No past events available.</p>
+    {% endif %}
 </div>
-
-<!-- CSS -->
-
 {% endblock %}

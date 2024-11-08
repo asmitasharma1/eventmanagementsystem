@@ -17,6 +17,9 @@ class Event(models.Model):
     organizer = models.ForeignKey(User, on_delete=models.CASCADE,default=1)  # Link to user who submits
     approved = models.BooleanField(default=False)  # Admin approval flag
     is_free = models.BooleanField(default=False)
+    latitude = models.FloatField(null=True, blank=True)  # New field for latitude
+    longitude = models.FloatField(null=True, blank=True)  # New field for longitude
+
     
     def clean(self):
         # Allow ticket price only if event is not free and ticket details are provided

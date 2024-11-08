@@ -100,7 +100,10 @@ def login(request):
             messages.success(request, "Login successful!")
             # return redirect('home')  # Redirect to home page after successful login
             user_profile = UserProfile.objects.get(user=user)
-            if user_profile.role == 'Organizer':
+            user_role = user_profile.role
+            request.session['user_role'] = user_role
+
+            if user_role == 'Organizer':
                 return redirect('organizer_dashboard')  # Redirect organizers to the dashboard
             else:
                 return redirect('home')  # Redirect regular users to the home page

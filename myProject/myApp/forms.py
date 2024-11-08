@@ -6,10 +6,13 @@ class DateInput(forms.DateInput):
 class EventForm(forms.ModelForm):
     class Meta:
         model = Event
-        fields = ['name', 'desc','img', 'date', 'time', 'location', 'ticket_template','number_of_tickets', 'ticket_price','is_free'] 
+        fields = ['name', 'desc','img', 'date', 'time', 'location', 'ticket_template','number_of_tickets', 'ticket_price','is_free','latitude', 'longitude'] 
     
     date = forms.DateField(widget=DateInput())  
     time = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time'}))
+
+    latitude = forms.FloatField(widget=forms.HiddenInput(), required=False)
+    longitude = forms.FloatField(widget=forms.HiddenInput(), required=False)
 
 class BookingForm(forms.ModelForm):
     class Meta:

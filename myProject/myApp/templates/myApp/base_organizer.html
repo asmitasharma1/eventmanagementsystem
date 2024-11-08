@@ -7,6 +7,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Organizer Dashboard{% endblock %}</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 
@@ -18,7 +22,7 @@
                 <li><a href="{% url 'create_event' %}">Create Event</a></li>
                 <li><a href="{% url 'manageevent' %}">Manage Events</a></li>
                 <li><a href="{% url 'attendees' %}">Attendees</a></li>
-                <li><a href="{}">Event Performance</a></li>
+                <li><a href="{% url 'event_performance' %}">Event Performance</a></li>
                 <li><a href="{}">Account Settings</a></li>
             </ul>
         </nav>
@@ -31,319 +35,312 @@
 
 <style>
     /* Base Styles */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-}
-
-body {
-    background-color: #f8f7f6;
-    color: #1a1412;
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-}
-
-/* Dashboard Layout */
-.dashboard-wrapper {
-    display: flex;
-    min-height: 100vh;
-    background-color: #f8f7f6;
-}
-
-/* Sidebar Styles */
-.sidebar {
-    width: 280px;
-    background: linear-gradient(180deg, #382a25 0%, #562d1c 100%);
-    color: #fff;
-    padding: 2rem 1rem;
-    height: 100vh;
-    position: fixed;
-    left: 0;
-    top: 0;
-    box-shadow: 2px 0 8px rgba(45, 24, 16, 0.15);
-    z-index: 100;
-}
-
-.sidebar ul {
-    list-style-type: none;
-    padding: 0;
-    margin-top: 2rem;
-}
-
-.sidebar ul li {
-    margin: 0.25rem 0;
-}
-
-.sidebar ul li a {
-    color: rgba(255, 255, 255, 0.85);
-    text-decoration: none;
-    font-size: 0.925rem;
-    display: flex;
-    align-items: center;
-    padding: 0.875rem 1.25rem;
-    border-radius: 6px;
-    transition: all 0.2s ease;
-    font-weight: 500;
-    background: linear-gradient(
-        to right,
-        transparent 0%,
-        transparent 100%
-    );
-}
-
-.sidebar ul li a:hover {
-    color: #fff;
-    background: linear-gradient(
-        to right,
-        rgba(216, 84, 27, 0.1) 0%,
-        rgba(216, 84, 27, 0.05) 100%
-    );
-    transform: translateX(4px);
-}
-
-.sidebar ul li a.active {
-    background: linear-gradient(
-        to right,
-        rgba(216, 84, 27, 0.2) 0%,
-        rgba(216, 84, 27, 0.1) 100%
-    );
-    color: #fff;
-    font-weight: 600;
-}
-
-/* Main Content Area */
-.main-content {
-    flex: 1;
-    margin-left: 280px;
-    padding: 2rem 2.5rem;
-    background-color: #f8f7f6;
-}
-
-/* Topbar Styles */
-.topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2.5rem;
-    padding: 1rem 0;
-    border-bottom: 1px solid rgba(216, 84, 27, 0.1);
-}
-
-.topbar h1 {
-    color: #d8541b;
-    font-size: 1.75rem;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-}
-
-.topbar-right {
-    display: flex;
-    gap: 1.25rem;
-    align-items: center;
-}
-
-/* Button Styles */
-.btn {
-    padding: 0.75rem 1.5rem;
-    border-radius: 6px;
-    text-decoration: none;
-    transition: all 0.2s ease;
-    border: none;
-    cursor: pointer;
-    font-weight: 500;
-    font-size: 0.925rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-}
-
-.btn-primary {
-    background: linear-gradient(135deg, #d8541b 0%, #bf4516 100%);
-    color: white;
-}
-
-.btn-primary:hover {
-    background: linear-gradient(135deg, #bf4516 0%, #a63912 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(216, 84, 27, 0.2);
-}
-
-.btn-secondary {
-    background: linear-gradient(135deg, #2d1810 0%, #1a1412 100%);
-    color: #fff;
-}
-
-.btn-secondary:hover {
-    background: linear-gradient(135deg, #1a1412 0%, #0d0a09 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(26, 20, 18, 0.2);
-}
-
-/* Dashboard Overview Cards */
-.dashboard-overview {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
-    margin-top: 1.5rem;
-}
-
-.overview-card {
-    background-color: white;
-    padding: 1.5rem;
-    border-radius: 10px;
-    box-shadow: 0 1px 3px rgba(26, 20, 18, 0.05);
-    transition: all 0.2s ease;
-    border: 1px solid rgba(216, 84, 27, 0.08);
-    position: relative;
-    overflow: hidden;
-}
-
-.overview-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 4px;
-    background: linear-gradient(to right, #d8541b, #bf4516);
-    opacity: 0;
-    transition: opacity 0.2s ease;
-}
-
-.overview-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(26, 20, 18, 0.08);
-}
-
-.overview-card:hover::before {
-    opacity: 1;
-}
-
-.overview-card h2 {
-    color: #d8541b;
-    font-size: 1.25rem;
-    margin-bottom: 1rem;
-    font-weight: 600;
-    letter-spacing: -0.3px;
-}
-
-/* Stats in Overview Cards */
-.stat-value {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #1a1412;
-    margin: 0.5rem 0;
-}
-
-.stat-label {
-    color: #666;
-    font-size: 0.875rem;
-}
-
-/* Responsive Design */
-@media (max-width: 1024px) {
-    .sidebar {
-        width: 240px;
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
     }
 
-    .main-content {
-        margin-left: 240px;
-        padding: 2rem;
+    body {
+        background-color: #f8f7f6;
+        color: #1a1412;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
     }
-}
 
-@media (max-width: 768px) {
+    /* Dashboard Layout */
     .dashboard-wrapper {
-        flex-direction: column;
+        display: flex;
+        min-height: 100vh;
+        background-color: #f8f7f6;
     }
 
+    /* Sidebar Styles */
     .sidebar {
-        width: 100%;
-        height: auto;
-        position: relative;
-        padding: 1rem;
+        width: 280px;
+        background: linear-gradient(180deg, #382a25 0%, #562d1c 100%);
+        color: #fff;
+        padding: 2rem 1rem;
+        height: 100vh;
+        position: fixed;
+        left: 0;
+        top: 0;
+        box-shadow: 2px 0 8px rgba(45, 24, 16, 0.15);
+        z-index: 100;
     }
 
+    .sidebar ul {
+        list-style-type: none;
+        padding: 0;
+        margin-top: 2rem;
+    }
+
+    .sidebar ul li {
+        margin: 0.25rem 0;
+    }
+
+    .sidebar ul li a {
+        color: rgba(255, 255, 255, 0.85);
+        text-decoration: none;
+        font-size: 0.925rem;
+        display: flex;
+        align-items: center;
+        padding: 0.875rem 1.25rem;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+        font-weight: 500;
+        background: linear-gradient(to right,
+                transparent 0%,
+                transparent 100%);
+    }
+
+    .sidebar ul li a:hover {
+        color: #fff;
+        background: linear-gradient(to right,
+                rgba(216, 84, 27, 0.1) 0%,
+                rgba(216, 84, 27, 0.05) 100%);
+        transform: translateX(4px);
+    }
+
+    .sidebar ul li a.active {
+        background: linear-gradient(to right,
+                rgba(216, 84, 27, 0.2) 0%,
+                rgba(216, 84, 27, 0.1) 100%);
+        color: #fff;
+        font-weight: 600;
+    }
+
+    /* Main Content Area */
     .main-content {
-        margin-left: 0;
-        padding: 1.5rem;
+        flex: 1;
+        margin-left: 280px;
+        padding: 2rem 2.5rem;
+        background-color: #f8f7f6;
     }
 
-    .dashboard-overview {
-        grid-template-columns: 1fr;
-    }
-
+    /* Topbar Styles */
     .topbar {
-        flex-direction: column;
-        gap: 1rem;
-        align-items: flex-start;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2.5rem;
+        padding: 1rem 0;
+        border-bottom: 1px solid rgba(216, 84, 27, 0.1);
     }
-}
 
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-    width: 6px;
-}
-
-::-webkit-scrollbar-track {
-    background: #f1f1f1;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #d8541b;
-    border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: #bf4516;
-}
-
-/* Additional Interactive Elements */
-.notification-badge {
-    background: #d8541b;
-    color: white;
-    padding: 0.25rem 0.5rem;
-    border-radius: 999px;
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-
-.status-indicator {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #22c55e;
-    display: inline-block;
-    margin-right: 0.5rem;
-}
-
-.status-indicator.offline {
-    background: #ef4444;
-}
-
-/* Loading States */
-.loading-skeleton {
-    background: linear-gradient(
-        90deg,
-        #f3f4f6 0%,
-        #e5e7eb 50%,
-        #f3f4f6 100%
-    );
-    background-size: 200% 100%;
-    animation: loading 1.5s infinite;
-}
-
-@keyframes loading {
-    0% {
-        background-position: 200% 0;
+    .topbar h1 {
+        color: #d8541b;
+        font-size: 1.75rem;
+        font-weight: 700;
+        letter-spacing: -0.5px;
     }
-    100% {
-        background-position: -200% 0;
+
+    .topbar-right {
+        display: flex;
+        gap: 1.25rem;
+        align-items: center;
     }
-}
+
+    /* Button Styles */
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 6px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        border: none;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 0.925rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #d8541b 0%, #bf4516 100%);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #bf4516 0%, #a63912 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(216, 84, 27, 0.2);
+    }
+
+    .btn-secondary {
+        background: linear-gradient(135deg, #2d1810 0%, #1a1412 100%);
+        color: #fff;
+    }
+
+    .btn-secondary:hover {
+        background: linear-gradient(135deg, #1a1412 0%, #0d0a09 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(26, 20, 18, 0.2);
+    }
+
+    /* Dashboard Overview Cards */
+    .dashboard-overview {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .overview-card {
+        background-color: white;
+        padding: 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 1px 3px rgba(26, 20, 18, 0.05);
+        transition: all 0.2s ease;
+        border: 1px solid rgba(216, 84, 27, 0.08);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .overview-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(to right, #d8541b, #bf4516);
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+
+    .overview-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(26, 20, 18, 0.08);
+    }
+
+    .overview-card:hover::before {
+        opacity: 1;
+    }
+
+    .overview-card h2 {
+        color: #d8541b;
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+        letter-spacing: -0.3px;
+    }
+
+    /* Stats in Overview Cards */
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1a1412;
+        margin: 0.5rem 0;
+    }
+
+    .stat-label {
+        color: #666;
+        font-size: 0.875rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+        .sidebar {
+            width: 240px;
+        }
+
+        .main-content {
+            margin-left: 240px;
+            padding: 2rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-wrapper {
+            flex-direction: column;
+        }
+
+        .sidebar {
+            width: 100%;
+            height: auto;
+            position: relative;
+            padding: 1rem;
+        }
+
+        .main-content {
+            margin-left: 0;
+            padding: 1.5rem;
+        }
+
+        .dashboard-overview {
+            grid-template-columns: 1fr;
+        }
+
+        .topbar {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #d8541b;
+        border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #bf4516;
+    }
+
+    /* Additional Interactive Elements */
+    .notification-badge {
+        background: #d8541b;
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .status-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #22c55e;
+        display: inline-block;
+        margin-right: 0.5rem;
+    }
+
+    .status-indicator.offline {
+        background: #ef4444;
+    }
+
+    /* Loading States */
+    .loading-skeleton {
+        background: linear-gradient(90deg,
+                #f3f4f6 0%,
+                #e5e7eb 50%,
+                #f3f4f6 100%);
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+    }
+
+    @keyframes loading {
+        0% {
+            background-position: 200% 0;
+        }
+
+        100% {
+            background-position: -200% 0;
+        }
+    }
 </style>
 
 </html>

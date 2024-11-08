@@ -8,30 +8,30 @@ Submit Event
 <style>
     body {
         font-family: Arial, sans-serif;
-        background-color: #f9f9f9; /* Light background color */
+        background-color: #f9f9f9;
         margin: 0;
         padding: 10px;
     }
 
     h1 {
-        color: #c54b3a; /* Header color */
+        color: #c54b3a;
         text-align: center;
         margin-bottom: 10px;
     }
 
     form {
-        background-color: white; /* White background for the form */
-        border: 1px solid #ccc; /* Light gray border */
-        border-radius: 8px; /* Rounded corners */
-        padding: 10px; /* Padding around the form */
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-        max-width: 600px; /* Max width for the form */
-        margin: auto; /* Center the form */
+        background-color: white;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        padding: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        max-width: 600px;
+        margin: auto;
     }
 
     label {
-        font-weight: bold; /* Bold labels */
-        margin-top: 10px; /* Spacing above labels */
+        font-weight: bold;
+        margin-top: 10px;
     }
 
     input[type="text"],
@@ -41,35 +41,54 @@ Submit Event
     input[type="file"],
     textarea,
     select {
-        width: 100%; /* Full width for inputs */
-        padding: 5px; /* Padding inside inputs */
-        margin: 8px 0; /* Spacing around inputs */
-        border: 1px solid #ccc; /* Light gray border */
-        border-radius: 4px; /* Rounded corners */
+        width: 100%;
+        padding: 5px;
+        margin: 8px 0;
+        border: 1px solid #ccc;
+        border-radius: 4px;
     }
 
     input[type="checkbox"] {
-        margin-right: 10px; /* Spacing to the right of checkbox */
+        margin-right: 10px;
     }
 
     input[type="submit"] {
-        background-color: #c54b3a; /* Submit button color */
-        color: white; /* Text color */
-        padding: 10px 15px; /* Padding for the button */
-        border: none; /* No border */
-        border-radius: 5px; /* Rounded corners */
-        cursor: pointer; /* Pointer cursor on hover */
-        font-size: 16px; /* Font size for button */
-        transition: background-color 0.3s; /* Transition effect */
+        background-color: #c54b3a;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s;
     }
 
     input[type="submit"]:hover {
-        background-color: #b43f32; /* Darker shade on hover */
+        background-color: #b43f32;
     }
 
     .error-messages {
-        color: red; /* Error message color */
-        margin-top: 10px; /* Spacing above error messages */
+        color: red;
+        margin-top: 10px;
+    }
+
+    #map {
+        height: 400px;
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .search-container {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 10px;
+    }
+
+    .search-input {
+        width: 300px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
     }
 </style>
 
@@ -91,8 +110,16 @@ Submit Event
     <label for="time">Time: </label>
     {{ form.time }}
     <br>
-    <label for="location">Location: </label>
-    {{ form.location }}
+    <label for="location">Select Location on Map:</label>
+    <div class="search-container">
+        <input type="text" id="placeSearch" class="search-input" placeholder="Search for a place..." />
+        <input type="hidden" id="location" name="location" value="{{ form.location.value }}">
+    </div>
+    <div id="map"></div>
+    <input type="hidden" id="latitude" name="latitude" value="{{ form.latitude.value }}">
+    <input type="hidden" id="longitude" name="longitude" value="{{ form.latitude.value }}">
+
+    <!-- {{ form.location }} -->
     <br>
     <label for="ticket_template">Ticket Image: </label>
     {{ form.ticket_template }}
@@ -114,5 +141,74 @@ Submit Event
     </div>
     {% endif %}
 </form>
+
+<!-- Include Leaflet CSS and JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+<!-- Include Leaflet Control Geocoder -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+<script>
+    // Initialize the map
+    function initMap() {
+        var map = L.map('map').setView([27.7172, 85.3240], 10); // Default center
+
+        // Add OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        var marker; // Variable to hold the marker
+
+        // Initialize the geocoder
+        var geocoder = L.Control.Geocoder.nominatim();
+
+        // Function to handle place search when Enter is pressed
+        document.getElementById('placeSearch').addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Prevent form submission
+                var placeName = this.value; // Get the input value
+                geocodePlace(placeName); // Call geocoding function
+            }
+        });
+
+        const searchInput = document.getElementById('placeSearch');
+        const locationInput = document.getElementById('location');
+
+        function updateLocation(placeName) {
+            locationInput.value = placeName; // Set the location input value
+        }
+
+        // Geocode place name to get coordinates
+        function geocodePlace(placeName) {
+            // No need to redeclare placeName; it's passed as an argument
+            geocoder.geocode(placeName, function (results) {
+                if (results && results.length > 0) {
+                    var latlng = results[0].center; // Get the latitude and longitude
+                    if (marker) {
+                        map.removeLayer(marker); // Remove previous marker if exists
+                    }
+                    marker = L.marker(latlng).addTo(map); // Add marker for the found place
+                    map.setView(latlng, 13); // Center the map on the found place
+
+                    // Update hidden inputs with latitude and longitude
+                    document.getElementById('latitude').value = latlng.lat;
+                    document.getElementById('longitude').value = latlng.lng;
+
+                    // Update the location input with the place name
+                    updateLocation(placeName);
+                } else {
+                    alert("Place not found. Please try again."); // Alert if no results
+                }
+            });
+        }
+    }
+
+    // Initialize the map when the window loads
+    window.onload = initMap;
+</script>
+
 
 {% endblock %}

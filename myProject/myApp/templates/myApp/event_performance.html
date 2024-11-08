@@ -1,0 +1,114 @@
+{% extends "base_organizer.html" %}
+
+{% block title %}Event Performance{% endblock %}
+
+{% block content %}
+<style>
+    .performance-wrapper {
+        padding: 1.5rem;
+    }
+
+    .performance-wrapper h1 {
+        color: #d8541b;
+        margin-bottom: 1rem;
+    }
+
+    .performance-wrapper table {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: white;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .performance-wrapper th,
+    .performance-wrapper td {
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        text-align: left;
+    }
+
+    .performance-wrapper th {
+        background-color: #f5f5f5;
+        color: #333;
+    }
+
+    .performance-wrapper tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+    .past-event {
+        color: gray;
+        text-decoration: line-through; /* Optional: strikes through past events */
+    }
+</style>
+
+<div class="performance-wrapper">
+    <h1>Event Performance</h1>
+
+    <!-- Canvas for Chart.js -->
+    <canvas id="attendanceChart" width="400" height="200"></canvas>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Event Name</th>
+                <th>Date</th>
+                <th>Total Attendees</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for data in performance_data %}
+            <tr class="{% if data.is_past %}past-event{% endif %}">
+                <td>{{ data.event.name }}</td>
+                <td>{{ data.event.date|date:"Y-m-d" }}</td>
+                <td>{{ data.total_attendees }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3">No performance data available.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Include Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Prepare data for the chart
+    const labels = [
+        {% for data in performance_data %}
+            "{{ data.event.name }}"{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    ];
+
+    const attendeesData = [
+        {% for data in performance_data %}
+            {{ data.total_attendees }}{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+    ];
+
+    const ctx = document.getElementById('attendanceChart').getContext('2d');
+    const attendanceChart = new Chart(ctx, {
+        type: 'bar', // Change to 'line' if you want a line chart
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Total Attendees',
+                data: attendeesData,
+                backgroundColor: 'rgba(216, 84, 27, 0.5)', // Semi-transparent color for bars
+                borderColor: 'rgba(216, 84, 27, 1)', // Border color for bars
+                borderWidth: 1, // Border width for bars
+                barThickness: 20 // Adjust this value to make bars thinner
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

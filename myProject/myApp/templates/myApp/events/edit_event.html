@@ -27,6 +27,16 @@
         </div>
         {% endfor %}
 
+        <!-- Location and Map Section -->
+        <label for="location">Select Location on Map:</label>
+        <div class="search-container">
+            <input type="text" id="placeSearch" class="search-input" placeholder="Search for a place..." />
+            <input type="hidden" id="location" name="location" value="{{ form.location.value }}">
+        </div>
+        <div id="map" style="height: 400px; width: 100%; margin-top: 10px;"></div>
+        <input type="hidden" id="latitude" name="latitude" value="{{ form.latitude.value }}">
+        <input type="hidden" id="longitude" name="longitude" value="{{ form.longitude.value }}">
+
         <div class="form-actions">
             <button type="submit" class="btn btn-primary">Save Changes</button>
         </div>
@@ -34,6 +44,7 @@
 </div>
 
 <style>
+    /* Add the styles from the previous map and form configuration */
     .edit-event {
         padding: 2rem;
         background: white;
@@ -87,4 +98,65 @@
         border-top: 1px solid rgba(26, 20, 18, 0.1);
     }
 </style>
+
+<!-- Include Leaflet CSS and JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+<!-- Include Leaflet Control Geocoder -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+<script>
+    // Initialize the map
+    function initMap() {
+        var map = L.map('map').setView([{{ form.latitude.value|default:"27.7172" }}, {{ form.longitude.value|default:"85.3240" }}], 13); // Default center or loaded values
+
+        // Add OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        var marker = L.marker([{{ form.latitude.value|default:"27.7172" }}, {{ form.longitude.value|default:"85.3240" }}]).addTo(map);
+
+        // Initialize the geocoder
+        var geocoder = L.Control.Geocoder.nominatim();
+
+        // Handle place search
+        document.getElementById('placeSearch').addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                var placeName = this.value;
+                geocodePlace(placeName);
+            }
+        });
+
+        const searchInput = document.getElementById('placeSearch');
+        const locationInput = document.getElementById('location');
+
+        function updateLocation(placeName) {
+            locationInput.value = placeName;
+        }
+
+        function geocodePlace(placeName) {
+            geocoder.geocode(placeName, function (results) {
+                if (results && results.length > 0) {
+                    var latlng = results[0].center;
+                    if (marker) {
+                        map.removeLayer(marker);
+                    }
+                    marker = L.marker(latlng).addTo(map);
+                    map.setView(latlng, 13);
+                    document.getElementById('latitude').value = latlng.lat;
+                    document.getElementById('longitude').value = latlng.lng;
+                    updateLocation(placeName);
+                } else {
+                    alert("Place not found. Please try again.");
+                }
+            });
+        }
+    }
+
+    window.onload = initMap;
+</script>
 {% endblock %}
