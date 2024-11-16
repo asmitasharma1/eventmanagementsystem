@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>Notifications</h2>
+    <!-- Notification Icon with Count Badge -->
+    <div class="notification-icon">
+        <i class="fa fa-bell"></i>
+        <span id="notification-badge" class="notification-badge"></span>
+    </div>
+    
+    <!-- Notification List -->
+    <ul class="list-group" id="notification-list">
+        {% for notification in notifications %}
+        <li class="list-group-item{% if notification.is_read %} read{% else %} unread{% endif %}">
+            {{ notification.message }}
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
+
+<style>
+.notification-icon {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 20px;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -10px;
+    background-color: #c54b3a;
+    color: white;
+    border-radius: 50%;
+    padding: 5px 10px;
+    font-size: 14px;
+    font-weight: bold;
+    display: none;
+}
+</style>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Function to update the notification count
+    function updateNotificationCount() {
+        $.ajax({
+            url: "{% url 'notification_count' %}",
+            method: "GET",
+            success: function(data) {
+                const unreadCount = data.unread_count;
+                if (unreadCount > 0) {
+                    $("#notification-badge").text(unreadCount).show();
+                } else {
+                    $("#notification-badge").hide();
+                }
+            }
+        });
+    }
+
+    // Initial call and interval for periodic updates
+    updateNotificationCount();
+    setInterval(updateNotificationCount, 10000); // every 10 seconds
+});
+</script>

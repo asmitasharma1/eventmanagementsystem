@@ -65,6 +65,7 @@
                 <th>Email</th>
                 <th>Phone</th>
                 <th>Booking Date</th>
+                <th>Ticket Number</th> <!-- New column for ticket number -->
             </tr>
         </thead>
         <tbody>
@@ -75,10 +76,11 @@
                 <td>{{ booking.email }}</td>
                 <td>{{ booking.phone }}</td>
                 <td>{{ booking.booking_date|date:"Y-m-d H:i" }}</td>
+                <td>{{ booking.ticket_number }}</td> <!-- Display ticket number -->
             </tr>
             {% empty %}
             <tr>
-                <td colspan="5">No attendees found.</td>
+                <td colspan="6">No attendees found.</td> <!-- Adjust colspan to match new column count -->
             </tr>
             {% endfor %}
         </tbody>

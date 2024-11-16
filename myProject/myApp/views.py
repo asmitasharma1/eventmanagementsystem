@@ -5,7 +5,7 @@ import time
 from django.conf import settings
 from xml.dom import ValidationErr
 from django.shortcuts import render,redirect,get_object_or_404
-from .models import Event,Booking
+from .models import Event,Booking, Notification
 from .forms import BookingForm
 from django.views.generic import ListView
 from django.contrib import messages
@@ -105,18 +105,24 @@ def events(request):
     else:
         events = Event.objects.all()  # Get all events if no search query is provided
 
+    event_distances = []
+
     if nearby and user_lat and user_lon:
         user_location = (float(user_lat), float(user_lon))
-        nearby_events = []
+        
         for event in events:
             event_location = (event.latitude, event.longitude)  # Ensure events have lat/lon fields
-            distance = geodesic(user_location, event_location).miles
-            if distance <= 10:  # Example: 10 miles radius
-                nearby_events.append(event)
-        # events = nearby_events
-        # Convert nearby events list back to a QuerySet
-        events = Event.objects.filter(id__in=[event.id for event in nearby_events])
+            distance = haversine(user_location[0], user_location[1], event_location[0], event_location[1]) 
+            event_distances.append((event, distance))  # Store event and its distance
+    
+    # If event_distances is populated, proceed to sort
+        if event_distances:
+            event_distances.sort(key=lambda x: x[1])  # Sort by the second element in the tuple (distance)
 
+            # Select the top K nearest events (K = 7)
+            K = 7
+            nearest_events = [event for event, _ in event_distances[:K]]
+            events = Event.objects.filter(id__in=[event.id for event in nearest_events])
     # Separate upcoming and past events
     upcoming_events = events.filter(date__gte=current_time).order_by('date')  # Events in the future or today
     past_events = events.filter(date__lt=current_time).order_by('-date')      # Events in the past
@@ -251,7 +257,7 @@ def delete_event(request, event_id):
         return redirect('manageevent')
     
     return render(request, 'events/delete_event.html', {'event': event})
-      
+     
 def book_event(request, event_id):
     event = get_object_or_404(Event, id=event_id)
     
@@ -270,33 +276,42 @@ def book_event(request, event_id):
             messages.error(request, "You cannot book more than 10 tickets.")
             return render(request, 'booking.html', {'event': event})
 
+        ticket_number = f"{int(time.time())}_{random.randint(1000, 9999)}"
+
         # Save the booking information
-        Booking.objects.create(
+        booking = Booking.objects.create(
             event=event,
             name=name,
             email=email,
             phone=phone,
             number_of_tickets=number_of_tickets,
             ticket_price=event.ticket_price,  # Adding ticket price from the event
+            ticket_number=ticket_number,
         )
-        
-        return redirect('booking_confirmation', event_id=event_id, number_of_tickets=number_of_tickets)  # Redirect to a confirmation page after booking
+        message = f"You have successfully booked the event: {event.name} on {event.date}."
+        Notification.objects.create(user=request.user, message=message)
+    
+        return redirect('booking_confirmation', event_id=event_id, booking_id=booking.id)  # Redirect to a confirmation page after booking
 
     return render(request, 'booking.html', {'event': event, 'is_event_in_future': is_event_in_future,})
-def booking_confirmation(request, event_id, number_of_tickets):
+    
+def booking_confirmation(request, event_id, booking_id):
     # Retrieve the event based on the event_id
     event = get_object_or_404(Event, id=event_id)
+    booking = get_object_or_404(Booking, id=booking_id, event=event)
 
     # Generate a unique ticket number (e.g., using a timestamp and random number)
-    ticket_number = f"{int(time.time())}_{random.randint(1000, 9999)}"  # Example ticket number logic
+    # ticket_number = f"{int(time.time())}_{random.randint(1000, 9999)}"  # Example ticket number logic
+    ticket_number = booking.ticket_number
     ticket_template_url = f"{settings.MEDIA_URL}{event.ticket_template.name}" if event.ticket_template else None
 
+    
     # Prepare the context data to pass to the template
     context = {
-        'ticket_number': ticket_number,
+        'ticket_number': booking.ticket_number,
         'ticket_template_url': ticket_template_url,
         'event': event,  # Pass the event object
-        'number_of_tickets': number_of_tickets,  # Pass number of tickets to template
+        'number_of_tickets': booking.number_of_tickets,  # Pass number of tickets to template
     }
 
     return render(request, 'booking_confirmation.html', context)

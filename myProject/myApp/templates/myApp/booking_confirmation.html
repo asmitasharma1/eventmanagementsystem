@@ -41,16 +41,15 @@ Booking Confirmation
     <h3>Your Ticket:</h3>
     <img src="{{ ticket_template_url }}" alt="Ticket Template" style="max-width: 100%; height: auto;" />
     <button class="download-button"
-        onclick="downloadTicketWithImage('{{ ticket_template_url }}', '{{ event.name }}')">Download Ticket</button>
+        onclick="downloadTicketWithImage('{{ ticket_template_url }}', '{{ event.name }}', '{{ ticket_number }}')">Download Ticket</button>
     {% else %}
     <p>No ticket template available.</p>
     {% endif %}
 </div>
 
 <script>
-    function downloadTicketWithImage(ticketTemplateUrl, eventName) {
-        // Generate a unique ticket number
-        const ticketNumber = Date.now() + Math.floor(Math.random() * 1000); // Unique number based on timestamp
+    function downloadTicketWithImage(ticketTemplateUrl, eventName,ticketNumber) {
+        console.log("Downloading ticket with number:", ticketNumber);
 
         // Create an image element to download
         const img = new Image();

@@ -118,4 +118,7 @@ def login(request):
 def logout(request):
     auth.logout(request)
     messages.info(request, "You have successfully logged out.")
+    # Clear any previous login messages
+    storage = messages.get_messages(request)
+    storage.used = True
     return redirect('/')  # Redirect to home or login page

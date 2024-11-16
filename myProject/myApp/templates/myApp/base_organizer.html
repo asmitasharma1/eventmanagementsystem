@@ -18,12 +18,19 @@
     <div class="dashboard-wrapper">
         <nav class="sidebar">
             <ul>
-                <li><a href="{% url 'organizer_dashboard' %}">Dashboard</a></li>
-                <li><a href="{% url 'create_event' %}">Create Event</a></li>
-                <li><a href="{% url 'manageevent' %}">Manage Events</a></li>
-                <li><a href="{% url 'attendees' %}">Attendees</a></li>
-                <li><a href="{% url 'event_performance' %}">Event Performance</a></li>
+                <li><a href="{% url 'organizer_dashboard' %}"
+                        class="{% if request.path == '/organizer_dashboard/' %}active{% endif %}">Dashboard</a></li>
+                <li><a href="{% url 'create_event' %}"
+                        class="{% if request.path == '/create_event/' %}active{% endif %}">Create Event</a></li>
+                <li><a href="{% url 'manageevent' %}"
+                        class="{% if request.path == '/manageevent/' %}active{% endif %}">Manage Events</a></li>
+                <li><a href="{% url 'attendees' %}"
+                        class="{% if request.path == '/attendees/' %}active{% endif %}">Attendees</a></li>
+                <li><a href="{% url 'event_performance' %}"
+                        class="{% if request.path == '/event-performance/' %}active{% endif %}">Event Performance</a>
+                </li>
                 <li><a href="{}">Account Settings</a></li>
+                <li><a href="{% url 'logout' %}" class="logout-button">Logout</a></li>
             </ul>
         </nav>
         <div class="main-content">
@@ -179,6 +186,19 @@
         transform: translateY(-1px);
         box-shadow: 0 4px 12px rgba(26, 20, 18, 0.2);
     }
+
+    .sidebar ul li a.logout-button {
+        background: linear-gradient(to right, rgba(255, 84, 84, 0.2) 0%, rgba(255, 84, 84, 0.1) 100%);
+        color: #ff5454;
+        font-weight: 600;
+        margin-top: 1rem;
+    }
+
+    .sidebar ul li a.logout-button:hover {
+        background: linear-gradient(to right, rgba(255, 84, 84, 0.3) 0%, rgba(255, 84, 84, 0.2) 100%);
+        color: #ff3030;
+    }
+
 
     /* Dashboard Overview Cards */
     .dashboard-overview {
