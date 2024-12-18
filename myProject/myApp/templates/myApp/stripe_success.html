@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{%block title%}
+Success
+{% endblock %}
+
+{%block content%}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Booking Success</title>
+</head>
+<body>
+    <div class="confirmation-container">
+        <h2>Booking Confirmed!</h2>
+        <p>Your booking for <strong>{{ event.name }}</strong> has been successfully confirmed.</p>
+        <p>Tickets booked: <strong>{{ number_of_tickets }}</strong></p>
+
+        {% if ticket_template_url %}
+            <h3>Your Ticket:</h3>
+            <img src="{{ ticket_template_url }}" alt="Ticket Template" style="max-width: 100%; height: auto;" />
+            <button class="download-button"
+                onclick="downloadTicketWithImage('{{ ticket_template_url }}', '{{ event.name }}', '{{ ticket_number }}')">Download Ticket</button>
+        {% else %}
+            <p>No ticket template available.</p>
+        {% endif %}
+    </div>
+
+    <script>
+        function downloadTicketWithImage(ticketTemplateUrl, eventName, ticketNumber) {
+            const img = new Image();
+            img.src = ticketTemplateUrl;
+
+            img.onload = function () {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+
+                canvas.width = img.width;
+                canvas.height = img.height;
+
+                ctx.drawImage(img, 0, 0);
+                ctx.font = "30px Arial";
+                ctx.fillStyle = "black";
+                ctx.fillText("Ticket #: " + ticketNumber, 20, 50);
+
+                const link = document.createElement('a');
+                link.download = `${eventName.replace(/\s+/g, '_')}_ticket_${ticketNumber}.png`;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+            };
+        }
+    </script>
+</body>
+</html>
+
+{% endblock %}

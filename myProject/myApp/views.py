@@ -257,65 +257,120 @@ def delete_event(request, event_id):
         return redirect('manageevent')
     
     return render(request, 'events/delete_event.html', {'event': event})
-     
 def book_event(request, event_id):
+    stripe.api_key = settings.STRIPE_SECRET_KEY
     event = get_object_or_404(Event, id=event_id)
-    
-    # Convert timezone.now() to a date to match event.date if event.date is a date
+
+    # Check if tickets are sold out
+    tickets_available = event.number_of_tickets - event.booked_tickets  # Ensure you have these fields in your Event model
     is_event_in_future = event.date >= timezone.now().date()
 
-    if request.method == 'POST'and is_event_in_future:
+    if tickets_available <= 0 and is_event_in_future:
+        # messages.error(request, "Tickets are sold out for this event.")
+        return render(request, 'booking.html', {'event': event, 'is_event_in_future': is_event_in_future, 'tickets_available': tickets_available})
+
+    if request.method == 'POST' and is_event_in_future:
         # Get user details from the form
         name = request.POST.get('name')
         email = request.POST.get('email')
         phone = request.POST.get('phone')  # Added phone number
         number_of_tickets = int(request.POST.get('number_of_tickets', 1))  # Added ticket count
-        
-        # Check ticket limit
+
+        # Check ticket limit per booking
         if number_of_tickets > 10:
             messages.error(request, "You cannot book more than 10 tickets.")
-            return render(request, 'booking.html', {'event': event})
+            return render(request, 'booking.html', {'event': event, 'is_event_in_future': is_event_in_future, 'tickets_available': tickets_available})
 
-        ticket_number = f"{int(time.time())}_{random.randint(1000, 9999)}"
+        # Check if enough tickets are available
+        if tickets_available < number_of_tickets:
+            messages.error(request, "Not enough tickets available for your booking.")
+            return render(request, 'booking.html', {'event': event, 'is_event_in_future': is_event_in_future, 'tickets_available': tickets_available})
+        print(f"Number of tickets: {number_of_tickets}")
+        print(f"Event price per ticket: {event.ticket_price}")
+        print(f"Total amount (in cents): {int(event.ticket_price * 100) * number_of_tickets}")
 
-        # Save the booking information
-        booking = Booking.objects.create(
-            event=event,
-            name=name,
-            email=email,
-            phone=phone,
-            number_of_tickets=number_of_tickets,
-            ticket_price=event.ticket_price,  # Adding ticket price from the event
-            ticket_number=ticket_number,
-        )
-        message = f"You have successfully booked the event: {event.name} on {event.date}."
-        Notification.objects.create(user=request.user, message=message)
-    
-        return redirect('booking_confirmation', event_id=event_id, booking_id=booking.id)  # Redirect to a confirmation page after booking
+        # Create Stripe Checkout Session
+        try:
+            checkout_session = stripe.checkout.Session.create(
+                payment_method_types=['card'],
+                line_items=[{
+                    'price_data': {
+                        'currency': 'npr',
+                        'unit_amount': int(event.ticket_price * 100),
+                        'product_data': {
+                            'name': f'{event.name} - Ticket',
+                        },
+                    },
+                    'quantity': number_of_tickets,
+                }],
+                mode='payment',
+                success_url=request.build_absolute_uri(reverse('booking_confirmation', args=[event_id])) + 
+                    f'?tickets={number_of_tickets}&name={name}&email={email}&phone={phone}',
+                cancel_url=request.build_absolute_uri(reverse('book_event', args=[event_id])),
+                client_reference_id=str(event_id),
+                customer_email=email,
+                metadata={
+                    'event_id': event_id,
+                    'number_of_tickets': number_of_tickets,
+                    'name': name,
+                    'email': email,
+                    'phone': phone
+                }
+            )
 
-    return render(request, 'booking.html', {'event': event, 'is_event_in_future': is_event_in_future,})
-    
-def booking_confirmation(request, event_id, booking_id):
-    # Retrieve the event based on the event_id
+            return redirect(checkout_session.url, code=303)
+
+        except Exception as e:
+            messages.error(request, f"Payment processing error: {str(e)}")
+            return redirect('booking', event_id=event_id)
+
+    return render(request, 'booking.html', {
+        'event': event,
+        'is_event_in_future': is_event_in_future,
+        'tickets_available': tickets_available
+    })
+
+def booking_confirmation(request, event_id):
+    # Retrieve query parameters
+    number_of_tickets = request.GET.get('tickets')
+    name = request.GET.get('name')
+    email = request.GET.get('email')
+    phone = request.GET.get('phone')
+
     event = get_object_or_404(Event, id=event_id)
-    booking = get_object_or_404(Booking, id=booking_id, event=event)
 
-    # Generate a unique ticket number (e.g., using a timestamp and random number)
-    # ticket_number = f"{int(time.time())}_{random.randint(1000, 9999)}"  # Example ticket number logic
-    ticket_number = booking.ticket_number
+    # Generate unique ticket number
+    ticket_number = f"{int(time.time())}_{random.randint(1000, 9999)}"
+
+    # Save the booking
+    booking = Booking.objects.create(
+        event=event,
+        name=name,
+        email=email,
+        phone=phone,
+        number_of_tickets=number_of_tickets,
+        ticket_price=event.ticket_price,
+        ticket_number=ticket_number,
+    )
+
+    # Update booked tickets count
+    event.booked_tickets += int(number_of_tickets)
+    event.save()
+
+    # Notify the user
+    message = f"You have successfully booked the event: {event.name} on {event.date}."
+    Notification.objects.create(user=request.user, message=message)
+
+    # Prepare context for confirmation page
     ticket_template_url = f"{settings.MEDIA_URL}{event.ticket_template.name}" if event.ticket_template else None
-
-    
-    # Prepare the context data to pass to the template
     context = {
-        'ticket_number': booking.ticket_number,
+        'ticket_number': ticket_number,
         'ticket_template_url': ticket_template_url,
-        'event': event,  # Pass the event object
-        'number_of_tickets': booking.number_of_tickets,  # Pass number of tickets to template
+        'event': event,
+        'number_of_tickets': number_of_tickets,
     }
 
     return render(request, 'booking_confirmation.html', context)
-
 def myBooking(request):
     if request.user.is_authenticated:
         # Get current date and time
@@ -344,18 +399,24 @@ def attendees_view(request):
     # Get the selected event ID from the query parameters, if any
     event_id = request.GET.get('event_id')
     if event_id:
+        selected_event = Event.objects.get(id=event_id, organizer=organizer)
         # Filter bookings by the selected event only if it's owned by the organizer
         bookings = Booking.objects.filter(event_id=event_id, event__organizer=organizer)
         selected_event_id = int(event_id)
+        remaining_tickets = selected_event.number_of_tickets - selected_event.booked_tickets
     else:
         # Show all bookings for all events owned by the organizer
         bookings = Booking.objects.filter(event__organizer=organizer)
+        selected_event = None
         selected_event_id = None
+        remaining_tickets = None
 
     context = {
         'bookings': bookings,
         'events': events,
         'selected_event_id': selected_event_id,
+        'remaining_tickets': remaining_tickets, 
+        'selected_event': selected_event,
     }
 
     return render(request, 'attendees.html', context)
@@ -386,3 +447,25 @@ def event_performance_view(request):
 
     return render(request, 'event_performance.html', context)
 
+@login_required
+def payments_view(request):
+    organizer = request.user
+
+    # Fetch events organized by the user
+    events = Event.objects.filter(organizer=organizer)
+
+    # Get the selected event ID from the request
+    selected_event_id = request.GET.get('event')
+
+    # Filter payments based on selected event, if any
+    if selected_event_id:
+        payments = Booking.objects.filter(event__id=selected_event_id, event__in=events).select_related('event')
+    else:
+        payments = Booking.objects.filter(event__in=events).select_related('event')
+
+    context = {
+        'events': events,
+        'payments': payments,
+    }
+
+    return render(request, 'payments.html', context)

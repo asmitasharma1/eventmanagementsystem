@@ -41,6 +41,34 @@ Book {{ event.name }}
         color: #c54b3a;
     }
 
+    /* CSS for Sold Out Message */
+    .sold-out-message {
+        text-align: center;
+        color: #c54b3a;
+        font-size: 1.2rem;
+        margin: 0;
+        padding: 0;
+        line-height: 1.5;
+        background-color: #f2dede;
+        /* Light red background */
+        border: 1px solid #ebccd1;
+        /* Light red border */
+        border-radius: 5px;
+        padding: 10px 15px;
+    }
+
+    .sold-out-message p {
+        margin: 0;
+        /* Removes any extra margin */
+    }
+
+    /* Centered Back to Events Button */
+    .sold-out-message+div {
+        text-align: center;
+        margin-top: 1.5rem;
+    }
+
+
     .form-group {
         margin-bottom: 1.5rem;
     }
@@ -98,6 +126,7 @@ Book {{ event.name }}
     <h2>Booking for {{ event.name }}</h2>
 
     {% if is_event_in_future %}
+    {% if tickets_available > 0 %}
     <form method="POST">
         {% csrf_token %}
 
@@ -122,28 +151,30 @@ Book {{ event.name }}
             <input type="text" id="ticket_price" name="ticket_price" value="{{ event.ticket_price }}" readonly
                 class="form-control">
         </div>
-
-        <div class="form-group">
-            <label for="payment_info">Payment Information:</label>
-            <input type="text" id="payment_info" name="payment_info" placeholder="Card Number" required
-                class="form-control">
-            <input type="text" id="expiry_date" name="expiry_date" placeholder="Expiry Date (MM/YY)" required
-                class="form-control">
-            <input type="text" id="cvv" name="cvv" placeholder="CVV" required class="form-control">
-        </div>
-
         <button type="submit" class="btn">Confirm Booking</button>
     </form>
+    {% else %}
+    <div class="sold-out-message">
+        <p>Tickets are sold out for this event.</p>
+    </div>
+    <div style="text-align: center; margin-top: 1.5rem;">
+        <a href="{% url 'events' %}" class="btn"
+            style="display: inline-block; padding: 0.8rem 2rem; font-size: 1.1rem; color: white; background-color: #c54b3a; border-radius: 5px; text-decoration: none;">
+            Back to Events
+        </a>
+    </div>
+    {% endif %}
     {% else %}
     <p style="text-align: center; color: #c54b3a; font-size: 1.2rem;">
         Booking is closed as this event has already passed.
     </p>
     <div style="text-align: center; margin-top: 1.5rem;">
         <a href="{% url 'events' %}" class="btn"
-            style="display: inline-block; padding: 0.8rem 2rem; font-size: 1.1rem; color: white; background-color: #c54b3a; border-radius: 5px; text-decoration: none;">Back
-            to Events</a>
+            style="display: inline-block; padding: 0.8rem 2rem; font-size: 1.1rem; color: white; background-color: #c54b3a; border-radius: 5px; text-decoration: none;">
+            Back to Events
+        </a>
     </div>
     {% endif %}
-
 </div>
+
 {% endblock %}

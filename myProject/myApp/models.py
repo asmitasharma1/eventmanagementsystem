@@ -13,6 +13,7 @@ class Event(models.Model):
     location = models.CharField(max_length=255, default='Unknown')
     ticket_template = models.ImageField(upload_to='myProject/pic/pic/', blank=True, null=True)
     number_of_tickets = models.PositiveIntegerField(null=True, blank=True)  # New field for tickets available
+    booked_tickets = models.IntegerField(default=0) 
     ticket_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # New field for ticket price
     organizer = models.ForeignKey(User, on_delete=models.CASCADE,default=1)  # Link to user who submits
     approved = models.BooleanField(default=False)  # Admin approval flag
@@ -34,7 +35,13 @@ class Event(models.Model):
 
     def __str__(self):
         return self.name
-
+    def save(self, *args, **kwargs):
+        # Set tickets_remaining to number_of_tickets on first save
+        if not self.pk:  # If the event is being created
+            self.tickets_remaining = self.number_of_tickets
+        super().save(*args, **kwargs)
+    def is_sold_out(self):
+        return self.number_of_tickets <= 0
 
 # Booking Model
 class Booking(models.Model):

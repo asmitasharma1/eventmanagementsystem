@@ -22,7 +22,7 @@ urlpatterns = [
     path("organizer_dashboard/", views.organizer_dashboard, name="organizer_dashboard"),
     path('event/<int:event_id>/download_ticket/<int:ticket_number>/', views.download_ticket, name='download_ticket'),
     # Booking confirmation URL with the option to download tickets
-    path('booking-confirmation/<int:event_id>/<int:booking_id>/', booking_confirmation, name='booking_confirmation'),
+    path('booking-confirmation/<int:event_id>/', booking_confirmation, name='booking_confirmation'),
     
     # Separate ticket download path after booking confirmation
     path('booking-confirmation/download_ticket/<int:event_id><booking_id>/', download_ticket, name='download_ticket'),
@@ -35,4 +35,5 @@ urlpatterns = [
     path('events/<int:event_id>/delete/', views.delete_event, name='delete_event'),
     path('attendees/', views.attendees_view, name='attendees'),
     path('event-performance/', views.event_performance_view, name='event_performance'),
+    path('payments/', views.payments_view, name='payments'),
 ]

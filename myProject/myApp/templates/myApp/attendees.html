@@ -57,6 +57,16 @@
         </form>
     </div>
 
+    <!-- Display Total and Remaining Tickets -->
+    {% if selected_event_id %}
+    <div class="ticket-summary">
+        <!-- <h4>Event: {{ selected_event.name }}</h4> -->
+        <p>Total Tickets: {{ selected_event.number_of_tickets }}</p> <!-- Display total tickets -->
+        <p>Booked Tickets: {{ selected_event.booked_tickets }}</p> <!-- Display booked tickets -->
+        <p>Remaining Tickets: {{ remaining_tickets }}</p> 
+    </div>
+    {% endif %}
+
     <table>
         <thead>
             <tr>
@@ -65,7 +75,7 @@
                 <th>Email</th>
                 <th>Phone</th>
                 <th>Booking Date</th>
-                <th>Ticket Number</th> <!-- New column for ticket number -->
+                <th>Ticket Number</th>
             </tr>
         </thead>
         <tbody>
@@ -76,11 +86,11 @@
                 <td>{{ booking.email }}</td>
                 <td>{{ booking.phone }}</td>
                 <td>{{ booking.booking_date|date:"Y-m-d H:i" }}</td>
-                <td>{{ booking.ticket_number }}</td> <!-- Display ticket number -->
+                <td>{{ booking.ticket_number }}</td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="6">No attendees found.</td> <!-- Adjust colspan to match new column count -->
+                <td colspan="6">No attendees found.</td>
             </tr>
             {% endfor %}
         </tbody>

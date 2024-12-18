@@ -105,7 +105,18 @@ Submit Event
     {{ form.img }}
     <br>
     <label for="date">Date: </label>
-    {{ form.date }}
+    <input type="date" id="eventDate" name="date" value="{{ form.date.value }}" required>
+    <script>
+        // Get today's date in the format YYYY-MM-DD
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+        const dd = String(today.getDate()).padStart(2, '0');
+        const formattedDate = `${yyyy}-${mm}-${dd}`;
+
+        // Set the min attribute of the date input
+        document.getElementById('eventDate').setAttribute('min', formattedDate);
+    </script>
     <br>
     <label for="time">Time: </label>
     {{ form.time }}
