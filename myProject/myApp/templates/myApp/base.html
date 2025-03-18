@@ -43,6 +43,7 @@
             margin: 0;
             padding: 50px 0 0;
             height: 100%;
+            padding-top: 50px;
         }
 
         .navbar {
@@ -151,6 +152,41 @@
         .navbar-nav.navbar-right>li>a:hover {
             color: #b4b17b !important;
         }
+
+        /* Adjust padding when navbar collapses on small screens */
+        @media (max-width: 767px) {
+            .navbar-collapse {
+                background: linear-gradient(135deg, #c54b3a 0%, #f78664 100%);
+                max-height: 100vh;
+                /* Limits height to viewport */
+                overflow-y: auto;
+                /* Scrollable if too many items */
+            }
+
+            .navbar-nav>li>a {
+                padding: 10px 15px;
+                /* Slightly smaller padding for mobile */
+            }
+
+            /* Push content below the navbar when expanded */
+            body.navbar-expanded {
+                padding-top: 200px;
+                /* Adjust this value based on your navbar's expanded height */
+            }
+
+            /* Ensure navbar items are stacked cleanly */
+            .navbar-nav {
+                margin: 0;
+            }
+        }
+
+        /* Larger screens */
+        @media (min-width: 768px) {
+            .navbar-collapse {
+                background: none;
+                /* Reset background for desktop */
+            }
+        }
     </style>
 </head>
 
@@ -158,51 +194,48 @@
     <nav class="navbar navbar-inverse">
         <div class="container-fluid">
             <div class="navbar-header">
+                <!-- Add the toggle button for small screens -->
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbarCollapse" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
                 <a class="navbar-brand" href="#">Events</a>
             </div>
-            <ul class="nav navbar-nav">
-                <li class="{% if request.path == '/' %}active{% endif %}"><a href="{% url 'home' %}">Home</a></li>
-                <li class="{% if request.path == '/about/' %}active{% endif %}"><a href="{% url 'about' %}">About</a>
-                </li>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+                <ul class="nav navbar-nav">
+                    <li class="{% if request.path == '/' %}active{% endif %}"><a href="{% url 'home' %}">Home</a></li>
+                    <li class="{% if request.path == '/about/' %}active{% endif %}"><a href="{% url 'about' %}">About</a></li>
+                    {% if user.is_authenticated %}
+                    <li class="{% if request.path == '/events/' %}active{% endif %}"><a href="{% url 'events' %}">Events</a></li>
+                    <li class="{% if request.path == '/myBooking/' %}active{% endif %}"><a href="{% url 'myBooking' %}">My Booking</a></li>
+                    <li class="{% if request.path == '/contact/' %}active{% endif %}"><a href="{% url 'contact' %}">Contact</a></li>
+                    <li><a href="{% url 'logout' %}"><span class="glyphicon glyphicon-log-out"></span> LogOut</a></li>
+                    {% endif %}
+                </ul>
                 {% if user.is_authenticated %}
-                <li class="{% if request.path == '/events/' %}active{% endif %}"><a href="{% url 'events' %}">Events</a>
-                </li>
-                <li class="{% if request.path == '/myBooking/' %}active{% endif %}"><a href="{% url 'myBooking' %}">My
-                        Booking</a></li>
-                <li class="{% if request.path == '/contact/' %}active{% endif %}"><a
-                        href="{% url 'contact' %}">Contact</a></li>
-                <!-- <li class="{% if request.path == '/submitevent' %}active{% endif %}"><a
-                        href="{% url 'submitevent' %}">Submit event</a></li> -->
-                <li><a href="{% url 'logout' %}"><span class="glyphicon glyphicon-log-out"></span> LogOut</a></li>
+                <ul class="nav navbar-nav navbar-right">
+                    <li class="profile-container">
+                        <a href="javascript:void(0);" onclick="toggleProfile()">
+                            <span class="glyphicon glyphicon-user"></span> {{ user.username }}
+                        </a>
+                        <div id="profileOverview">
+                            <h4>Profile Overview</h4>
+                            <p>Username: {{ user.username }}</p>
+                            <p>Email: {{ user.email }}</p>
+                        </div>
+                    </li>
+                </ul>
+                {% else %}
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="{% url 'register' %}"><span class="glyphicon glyphicon-user"></span> Sign Up</a></li>
+                    <li><a href="{% url 'login' %}"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+                </ul>
                 {% endif %}
-            </ul>
-
-            {% if user.is_authenticated %}
-            <ul class="nav navbar-nav navbar-right">
-                <li class="profile-container">
-                    <!-- Clickable username to toggle profile overview -->
-                    <a href="javascript:void(0);" onclick="toggleProfile()">
-                        <span class="glyphicon glyphicon-user"></span> {{ user.username }}
-                    </a>
-
-                    <!-- Profile Overview Section (Initially hidden) -->
-                    <div id="profileOverview">
-                        <h4>Profile Overview</h4>
-                        <p>Username: {{ user.username }}</p>
-                        <p>Email: {{ user.email }}</p>
-                        <!-- Add more profile details here -->
-                    </div>
-                </li>
-            </ul>
-            {% else %}
-            <ul class="nav navbar-nav navbar-right">
-                <li><a href="{% url 'register' %}"><span class="glyphicon glyphicon-user"></span> Sign Up</a></li>
-                <li><a href="{% url 'login' %}"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
-            </ul>
-            {% endif %}
+            </div>
         </div>
     </nav>
-
     {% if messages %}
     <div>
         {% for message in messages %}
@@ -218,6 +251,23 @@
     </div>
     {% endif %}
     <script>
+        $(document).ready(function () {
+            // Toggle body class when navbar collapses/expands
+            $('.navbar-toggle').on('click', function () {
+                if ($('.navbar-collapse').hasClass('in')) {
+                    $('body').removeClass('navbar-expanded');
+                } else {
+                    $('body').addClass('navbar-expanded');
+                }
+            });
+
+            // Remove class when resizing back to larger screens
+            $(window).resize(function () {
+                if ($(window).width() >= 768) {
+                    $('body').removeClass('navbar-expanded');
+                }
+            });
+        });
         // JavaScript to hide the alert for sold-out tickets
         window.onload = function () {
             var alertMessage = document.getElementById('soldOutAlert');

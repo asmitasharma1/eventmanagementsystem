@@ -95,6 +95,7 @@ def events(request):
     user_lat = request.GET.get('user_lat')   # Get user latitude
     user_lon = request.GET.get('user_lon')   # Get user longitude
     nearby = request.GET.get('nearby', False) 
+    radius = float(request.GET.get('radius', 10))  # Default radius of 10 km
 
     events = Event.objects.all()  # Default to all events
 
@@ -111,18 +112,21 @@ def events(request):
         user_location = (float(user_lat), float(user_lon))
         
         for event in events:
-            event_location = (event.latitude, event.longitude)  # Ensure events have lat/lon fields
-            distance = haversine(user_location[0], user_location[1], event_location[0], event_location[1]) 
-            event_distances.append((event, distance))  # Store event and its distance
-    
-    # If event_distances is populated, proceed to sort
-        if event_distances:
-            event_distances.sort(key=lambda x: x[1])  # Sort by the second element in the tuple (distance)
+            event_location = (event.latitude, event.longitude)
+            distance = haversine(user_location[0], user_location[1], event_location[0], event_location[1])
+            if distance <= radius:  # Filter events within the radius
+                event_distances.append((event, distance))
+        
+        # Sort events by distance
+        event_distances.sort(key=lambda x: x[1])
 
-            # Select the top K nearest events (K = 7)
-            K = 7
+        # Determine K as the number of events within the radius
+        K = len(event_distances)
+        if K > 0:
             nearest_events = [event for event, _ in event_distances[:K]]
             events = Event.objects.filter(id__in=[event.id for event in nearest_events])
+        else:
+            events = Event.objects.none() 
     # Separate upcoming and past events
     upcoming_events = events.filter(date__gte=current_time).order_by('date')  # Events in the future or today
     past_events = events.filter(date__lt=current_time).order_by('-date')      # Events in the past
@@ -135,6 +139,7 @@ def events(request):
         'user_lat': user_lat,
         'user_lon': user_lon,
         'nearby': nearby,
+        'radius': radius,
     }
 
 
